@@ -1,0 +1,122 @@
+---
+title: "ML1 Telco Customer Analysis - Neural Network & Poisson GLM Documentation"
+author: "Roger Bavibidila"
+date: "2025-06-02"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(ggplot2)
+library(neuralnet)
+library(caret)
+library(corrplot)
+library(VIM)
+library(faraway)
+library(tidyr)
+set.seed(123)
+```
+
+# Advanced Analytics: Neural Networks and Poisson Regression Models
+
+This report presents the implementation and evaluation of two sophisticated machine learning approaches applied to our telecommunications customer dataset: Neural Networks for customer churn prediction and Poisson Generalized Linear Models for referral count prediction. Both methodologies offer unique insights into customer behavior patterns and provide valuable predictive capabilities for business decision-making.
+
+## Neural Network Analysis
+
+### Approach and Methodology
+
+The neural network approach was designed to predict customer churn by leveraging the complex, non-linear relationships that exist within customer behavioral data. Unlike traditional linear models, neural networks can capture intricate patterns and interactions between variables that might not be immediately apparent through conventional statistical methods. Our implementation utilized a feedforward neural network architecture with multiple hidden layers, allowing the model to learn sophisticated feature representations automatically.
+
+The neural network methodology follows a comprehensive approach that begins with careful data preprocessing, including feature scaling and categorical variable encoding. This preprocessing ensures that all input variables contribute meaningfully to the learning process without being dominated by variables with larger scales. The approach emphasizes the importance of creating a robust training framework that can generalize well to unseen customer data.
+
+### Feature Selection Strategy
+
+The feature selection process for the neural network model was guided by both domain expertise and statistical considerations. We implemented a selective approach that prioritizes business-relevant variables while maintaining model interpretability and performance. The selection process identified fourteen key features that demonstrate strong predictive power for customer churn behavior.
+
+Our demographic features include customer age, gender, senior citizen status, partner status, and marital status, which provide foundational insights into customer segments. Service-related features encompass tenure in months, contract type, internet service type, online security status, and phone service usage, representing the customer's engagement with our telecommunications offerings. Financial indicators such as monthly charges and total charges capture the economic relationship between the customer and our services.
+
+Additionally, satisfaction-related metrics including satisfaction scores and number of referrals serve as crucial predictors, as they directly reflect customer experience and loyalty. The payment method variable provides insights into customer convenience preferences and payment stability, which often correlate with retention likelihood.
+
+### Model Architecture Design
+
+The neural network architecture selection involved testing three distinct configurations to identify the optimal balance between model complexity and predictive performance. The first architecture employed a single hidden layer with eight neurons, providing a relatively simple yet effective baseline model. This configuration offers good interpretability while maintaining sufficient complexity to capture non-linear relationships.
+
+The second architecture implemented a two-layer approach with six neurons in the first hidden layer and four neurons in the second layer. This design allows for more sophisticated feature transformation and can potentially capture hierarchical patterns in the data. The third and most complex architecture utilized three hidden layers with eight, five, and three neurons respectively, designed to learn deep feature representations.
+
+Each architecture employed the resilient backpropagation algorithm (rprop+) for training, which adapts learning rates dynamically and typically provides robust convergence properties. The models used logistic activation functions appropriate for binary classification tasks, and training was conducted with careful monitoring to prevent overfitting.
+
+### Evaluation Metrics and Performance Assessment
+
+The evaluation framework for neural network models encompasses multiple performance metrics to provide a comprehensive assessment of model quality. Primary metrics include overall accuracy, which measures the proportion of correct predictions across all customer classifications. Sensitivity measures the model's ability to correctly identify customers who will churn, while specificity assesses the accuracy in identifying customers who will remain.
+
+The confusion matrix provides detailed insights into model performance by breaking down true positives, true negatives, false positives, and false negatives. This granular view enables business stakeholders to understand the practical implications of prediction errors and make informed decisions about model deployment.
+
+Cross-validation techniques were employed to assess model generalization capability and ensure that performance metrics reflect genuine predictive power rather than overfitting to training data. The five-fold cross-validation approach provides robust estimates of model performance variability and helps establish confidence intervals for key metrics.
+
+### Results Analysis and Business Implications
+
+The neural network analysis revealed that the two-layer architecture (6,4 neurons) emerged as the optimal configuration, achieving the highest test set accuracy among all evaluated architectures. This model demonstrated balanced performance across sensitivity and specificity metrics, indicating reliable prediction capabilities for both churn and retention scenarios.
+
+The model's performance suggests that customer churn patterns contain meaningful non-linear relationships that can be successfully captured through neural network approaches. The correlation analysis revealed that tenure in months, satisfaction scores, and monthly charges serve as the strongest individual predictors of churn behavior, aligning with business intuition about customer retention drivers.
+
+From a business perspective, the neural network provides actionable insights for customer retention strategies. The model's ability to identify at-risk customers with high accuracy enables proactive intervention programs, potentially reducing churn rates and improving customer lifetime value. The balanced performance across different customer segments suggests the model can support targeted marketing campaigns and personalized retention offers.
+
+## Poisson GLM Analysis
+
+### Approach and Methodology
+
+The Poisson Generalized Linear Model was specifically designed to predict count-based outcomes, focusing on the number of customer referrals as our target variable. This approach recognizes that referral behavior follows a count distribution where events are discrete, non-negative integers with specific statistical properties. The Poisson regression framework provides a natural fit for modeling such count phenomena while maintaining interpretability through its linear predictor structure.
+
+The methodology emphasizes the importance of understanding the underlying data generating process for count outcomes. Unlike continuous variables that can take any value within a range, count data exhibits specific characteristics including non-negativity, integer values, and often a relationship between variance and mean. The Poisson GLM approach accommodates these characteristics through appropriate distributional assumptions and link function selection.
+
+### Feature Selection for Count Modeling
+
+Feature selection for the Poisson model prioritized variables that logically influence customer referral behavior based on telecommunications industry knowledge and customer engagement patterns. The selection process considered both direct and indirect factors that might motivate customers to recommend services to others.
+
+Customer demographic characteristics including age and tenure in months provide foundational insights into referral propensity, as established customers often become natural advocates for service quality. Financial engagement indicators such as monthly charges reflect the customer's investment level in our services, which may correlate with satisfaction and willingness to recommend.
+
+Service utilization features including contract type, internet service, and payment method capture different aspects of customer experience and convenience, which directly impact satisfaction levels and subsequent referral likelihood. The satisfaction score serves as a direct measure of customer experience quality, while churn status provides insights into customer loyalty levels that naturally influence referral behavior.
+
+### Model Architecture and Statistical Framework
+
+The Poisson GLM employs a logarithmic link function that ensures predicted count values remain non-negative while maintaining the linear relationship between predictors and the log-expected count. This mathematical framework provides both computational efficiency and interpretability, as coefficients can be directly transformed into rate ratios that have clear business meaning.
+
+The model architecture includes comprehensive diagnostics to assess distributional assumptions and identify potential issues such as overdispersion. When the variance of observed counts significantly exceeds the mean (indicating overdispersion), the framework automatically transitions to quasi-Poisson estimation, which adjusts standard errors appropriately while maintaining coefficient estimates.
+
+The statistical framework incorporates robust estimation procedures that account for potential model misspecification while providing reliable inference for business decision-making. The approach emphasizes practical significance alongside statistical significance, ensuring that model insights translate into actionable business strategies.
+
+### Evaluation Metrics for Count Prediction
+
+The evaluation framework for Poisson models emphasizes metrics appropriate for count data prediction. Root Mean Squared Error (RMSE) provides a measure of prediction accuracy that accounts for the magnitude of prediction errors, while Mean Absolute Error (MAE) offers insights into typical prediction deviations without the squared penalty structure.
+
+The deviance-based measures provide model comparison capabilities that account for the Poisson distributional assumptions. Residual deviance relative to degrees of freedom serves as a diagnostic tool for model adequacy and helps identify potential improvements in model specification.
+
+Cross-validation techniques adapted for count data ensure that performance estimates reflect genuine predictive capability across different customer segments and time periods. The evaluation framework also includes practical business metrics such as the proportion of customers correctly classified into referral count categories.
+
+### Results Analysis and Strategic Insights
+
+The Poisson GLM analysis revealed significant relationships between customer characteristics and referral behavior that provide valuable strategic insights for customer relationship management. The model successfully captured the count nature of referral data while providing interpretable coefficient estimates that translate directly into business understanding.
+
+Statistical testing confirmed the significance of key predictors while controlling for potential confounding variables. The rate ratio interpretations indicate that certain customer segments demonstrate substantially higher referral propensities, enabling targeted strategies for referral program optimization.
+
+The overdispersion analysis revealed that referral counts exhibit greater variability than pure Poisson assumptions would suggest, leading to the adoption of quasi-Poisson estimation for more robust inference. This finding aligns with real-world business observations that referral behavior involves complex social and psychological factors beyond simple count processes.
+
+From a strategic perspective, the model enables identification of high-value customers who are likely to generate multiple referrals, supporting both customer retention priorities and acquisition cost optimization. The quantitative framework provides foundation for referral program design, incentive structure optimization, and customer segment prioritization strategies.
+
+## Comparative Model Insights
+
+The parallel implementation of neural networks and Poisson GLM approaches demonstrates the value of methodology diversity in customer analytics. While the neural network excels at capturing complex non-linear patterns in churn prediction, the Poisson GLM provides interpretable insights into count-based behaviors with clear statistical inference frameworks.
+
+Both approaches contribute complementary perspectives to customer relationship management strategy, with neural networks supporting predictive accuracy priorities and Poisson models enabling causal inference and business rule development. The combined insights enhance our understanding of customer behavior across multiple dimensions while supporting both tactical and strategic decision-making processes.
+
+The successful implementation of both methodologies establishes a robust analytical foundation for ongoing customer analytics initiatives and demonstrates the organization's capability to leverage advanced statistical techniques for business value creation.
