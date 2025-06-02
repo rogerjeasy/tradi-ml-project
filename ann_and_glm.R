@@ -77,6 +77,8 @@ p1 <- ggplot(tr_clean, aes(x = Number.of.Referrals)) +
   theme_minimal()
 
 print(p1)
+# Save the plot as a PNG file
+ggsave("Plots/number_referrals_distribution.png", plot = p1, width = 8, height = 6, dpi = 300)
 
 # Churn by key variables
 p2 <- ggplot(tr_clean, aes(x = Tenure.in.Months, fill = Churn)) +
@@ -86,6 +88,9 @@ p2 <- ggplot(tr_clean, aes(x = Tenure.in.Months, fill = Churn)) +
   theme_minimal()
 
 print(p2)
+# Save the plot as a PNG file
+ggsave("Plots/tenure_churn_distribution.png", plot = p2, width = 8, height = 6, dpi = 300)
+
 
 # ==============================================================================
 # NEURAL NETWORK ANALYSIS - CHURN PREDICTION
