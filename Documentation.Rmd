@@ -38,10 +38,122 @@ set.seed(123)
 # Method
 
 ## Data Set
+The dataset consists of customer data including demographic information (e.g., Gender, Age), service details (e.g., Contract.Type, Internet.Type), and customer behavior (e.g., Tenure.in.Months, Monthly.Charge, Total.Refunds). The response variables we worked with were:
+
+- **CLTV (Customer Lifetime Value)**: a continuous variable indicating the lifetime value of a customer.
+- **Churn**: a binary classification target (Yes/No) representing whether the customer churned.
+Missing values were handled by filtering out incomplete records for relevant models. Correlated features were examined using a correlation matrix, and some features were removed to avoid multicollinearity.
 
 ## Research Process
+since the whole work was divided into 3 parts in order to make that all of us contribute equally to the project. To this end, following research steps were taken for LM and SVM Part. 
+1. **Regression Modeling for CLTV Prediction**:
+   - Initial linear model using all available predictors.
+   - Variance Inflation Factor (VIF) analysis to assess multicollinearity.
+   - Polynomial transformation (degree 4) on `Tenure.in.Months` to capture non-linear effects.
+   - Stepwise selection based on AIC to identify the most parsimonious model.
+   - Residual diagnostics including Cook’s distance and Q-Q plots to ensure model validity.
 
+2. **Classification Modeling for Churn Prediction**:
+   - Converted Churn to a binary factor.
+   - Removed highly correlated variables using correlation threshold (0.9).
+   - Applied LASSO regression for feature selection.
+   - Trained a Support Vector Machine (SVM) classifier using selected features.
+   - Hyperparameter tuning performed via cross-validation.
+   
 ## SVM and LM
+### Linear Model for CLTV
+
+The initial linear model using all predictors yielded an Adjusted R² of approximately 0.164, indicating limited explanatory power. To improve this, we explored non-linear effects by applying a polynomial transformation of degree 4 to the `Tenure.in.Months` variable. This transformation led to a modest improvement in the model’s Adjusted R², suggesting that the relationship between tenure and CLTV is not purely linear.As can be see in the below mentioned scatterplot. 
+
+```{r cltv-vs-tenure-img, echo=FALSE, fig.cap="Effect of Tenure on CLTV (Polynomial)", fig.align='center', out.width='85%'}
+knitr::include_graphics("Plots/cltv_vs_tenure.png")
+
+```
+CLTV varies widely, for example, for any given tenure, there's a broad range of CLTV values. Some customers at a particular tenure are very valuable, while others are less so. This may indicates that tenure isn't the only factor determining CLTV.Similarly, earlier tenure (0 to 10 months) shows a slight, gradual increase in CLTV during the initial months. Customers are perhaps getting more accustomed to services, or their initial value is being realized. Mid-Tenure Dip/Plateau (10-30 months): After the initial rise, the red line slightly dips or plateaus. This suggests that for customers around 10 to 30 months of tenure, their CLTV might not be growing much, or could even slightly decrease on average. This could be a critical period for churn risk if customers aren't seeing increasing value. Significant Increase (30-70 months): This is the most pronounced part of the trend. From around 30 months onwards, CLTV experiences a strong and steady increase, peaking somewhere around 65-70 months. This indicates that customers who stay with the company for longer periods (roughly 2.5 to 6 years) become significantly more valuable to the business. Late Tenure Plateau/Slight Decline (70+ months): After reaching its peak, the red line appears to level off or show a very slight decrease. This suggests that the substantial growth in CLTV might slow down or stabilize for very long-term customers, or even slightly decline for the extremely long-tenured ones.
+```{r cooks-distance-img, echo=FALSE, fig.cap="Cook's Distance Plot"}
+knitr::include_graphics("Plots/cooks_distance.png")
+```
+Additionally, we use cook's distance plot to identify influential data points that could disproportionately affect the model and overall fit. The plot shows the Cook's distance for each observation in our dataset, which is used to predict Customer Lifetime Value (CLTV) based on variables such as age, tenure, and average monthly data download.
+
+As evident from the plot, most observations exhibit relatively low Cook's distance values, indicating they have a minor influence on the model. However, observations 1894, 3143, and 153 stand out with significantly higher Cook's distance values. This suggests that these specific data points are highly influential. Their presence in the dataset has a considerable impact on the model's estimated relationships between the predictors and CLTV. 
+these influential points required further investigation to determine if they were outliers or if they represented valid, extreme cases that should be retained in the analysis. After careful consideration (based on personal knowledge: as unique cases, where observations may belong to a different segment), we decided to retain these points in the final model, as they provided valuable insights into customer behavior and CLTV dynamics.
+
+
+```{r res-vs-lev-img, echo=FALSE, fig.cap="Residuals vs Leverage", fig.align='center', out.width='85%'}
+knitr::include_graphics("Plots/residuals_vs_leverage.png")
+```
+Furthermore, we have residual vs leverage scatterplot which is a diagnostic tool used to assess the influence of individual data points on the fitted linear regression model. In this plot, the x-axis represents the leverage of each observation, which indicates how far an observation's predictor values are from the mean of the predictor values. The y-axis represents the standardized residuals, which measure the difference between the observed and predicted values, standardized by their variance.
+
+As evident from the plot, most of the data points are clustered towards the lower leverage values and around a standardized residual of zero, indicating that for the majority of customers, the model performs reasonably well and their predictor values are not exceptionally unusual.
+
+However, we can observe specific points that deviate from this general pattern, including observations labeled 3143, 153, and 1894. These are the same observations identified in the previous Cook's distance plot.
+
+Observation 3143 has both high leverage (it's far to the right on the x-axis) and a relatively large positive standardized residual (it's high up on the y-axis). This means it has an unusual combination of predictor values and the model significantly underpredicted its CLTV.
+Observations 153 and 1894 also exhibit high leverage, being positioned further to the right on the x-axis. While their standardized residuals (y-axis position) are not as extreme as 3143, their high leverage combined with their residuals makes them influential. The Cook's distance contours (the dashed lines, though only one is clearly visible at the bottom) would curve upwards and to the right, showing that points in those areas have high Cook's distance.
+Identifying these points is crucial because observations with high leverage and/or large residuals can significantly impact the regression coefficients, potentially pulling the regression line in their direction
+
+consequently, We further refined the model using stepwise AIC-based feature selection. The final model retained key predictors such as `Tenure.in.Months`, `Monthly.Charge`, `Total.Refunds`, `Contract.Type`, and `Premium.Tech.Support`. Residual analysis using Q-Q plots confirmed the assumption of normality, while Cook’s distance was used to detect influential data points that might disproportionately affect the model. The final linear model provided a more interpretable and statistically sound estimate of CLTV.
+```{r qqline-img, echo=FALSE, fig.cap="Q-Q Plot with QQ Line of Residuals", fig.align='center', out.width='85%'}
+knitr::include_graphics("Plots/qqline_plot.png")
+```
+
+To this end, we make use of Normal Q-Q Plot to assess whether the residuals from our Customer Lifetime Value (CLTV) regression model approximately follow a normal distribution.  The plot compares the quantiles of our model's residuals (Y-axis) against the quantiles expected from a perfect normal distribution (X-axis), with a straight line indicating perfect normality.
+
+As evident from the plot, the majority of the data points closely align with the straight line, particularly in the central portion of the distribution. This indicates that the bulk of our model's residuals are, for practical purposes, sufficiently close to being normally distributed.
+
+While there are slight deviations at the extreme tails (the very lowest and highest residual values), where the points curve away from the line, these minor deviations are generally acceptable for the purposes of a churn project. In large datasets, perfect normality is rarely achieved, and the robustness of regression models often allows for minor departures, especially at the tails, without invalidating the core insights or predictive capabilities needed for practical business applications like customer churn analysis. The primary concern is typically severe non-normality, which is not strongly indicated here. Therefore, the residual distribution is considered sufficiently normal for proceeding with the churn project and drawing reliable conclusions from the CLTV model.
+
+### SVM for Churn Classification
+
+The classification task for Churn prediction began with the removal of highly correlated predictors and irrelevant or noisy features. The cleaned dataset was used to perform LASSO regression for feature selection. This process resulted in a compact set of predictors: `Tenure.in.Months`, `Monthly.Charge`, `Contract.Type`, `Internet.Type`, `Premium.Services`, and `Payment.Method`.
+
+```{r lasso-cv-plot-img, echo=FALSE, fig.cap="Cross-Validation Plot for LASSO", fig.align='center', out.width='85%'}
+knitr::include_graphics("Plots/lasso_cv_plot.png")
+```
+
+
+similarly, we used cross-validation for a Lasso regression model, which is used to build a robust churn prediction model. The plot shows  U-shaped curve for the prediction error. On the left (low regularization), the model is complex (uses many features), and the error is low.
+In the middle, there's an optimal range where the error is minimized. This is where the model balances complexity and predictive power, effectively selecting the most important features for churn prediction (indicated by the dashed lines and the numbers at the top).
+On the right (high regularization), the model becomes too simple (uses very few features), and the error dramatically increases because it's underfitting the data.
+In essence, this plot visually confirms that your cross-validation successfully found the ideal amount of regularization to build a churn prediction model that is both accurate and appropriately parsimonious, by identifying the lambda value that minimizes prediction error on unseen data.
+
+Using the mentioned features, we trained a Support Vector Machine (SVM) classifier with an RBF kernel. The model’s hyperparameters, including the cost parameter and kernel coefficient (gamma), were tuned using a grid search with 5-fold cross-validation. The final model showed strong classification performance (accuracy and other metrics can be added here once evaluated) and was able to distinguish between customers likely to churn and those likely to stay.
+### Hyperparameter Tuning and Model Selection
+
+The hyperparameter tuning process involved evaluating multiple values of the cost parameter `C`, which controls the trade-off between maximizing the margin and minimizing classification error, and the kernel coefficient `gamma`, which defines the influence of a single training example. The 5-fold cross-validation ensured that the model's performance was validated on different subsets of the data, providing a reliable estimate of its generalization capability.
+
+The best performing model was identified based on accuracy, with optimal values found at `C = 1` and `gamma = 0.0225`. This balance allowed the model to fit the data well without overfitting, as reflected by the high accuracy observed during cross-validation.
+
+---
+
+### Final Model Training and Evaluation
+
+After identifying optimal hyperparameters, a final SVM model was trained on the entire training dataset using these parameters. This model was then evaluated on a separate test dataset to measure its performance on unseen data.
+
+The evaluation metrics demonstrated:
+
+- **High accuracy (~98.6%)**, indicating that the model correctly classified the majority of customers.
+- **Strong sensitivity and specificity**, reflecting the model's ability to correctly identify both churners and non-churners.
+- **Balanced confusion matrix results**, with low false positive and false negative rates, essential for business decisions such as targeted retention campaigns.
+
+---
+
+### SVM Results
+
+The SVM with an RBF kernel proved effective in handling the non-linear relationships between the predictors and churn outcome. The kernel trick enabled mapping the input features into a higher-dimensional space where a clear separation between classes could be established.
+
+The cross-validation approach during tuning helped avoid overfitting, ensuring that the selected model parameters generalize well beyond the training data.
+
+Comparing the models trained using caret’s automated tuning and the manual `svm()` approach revealed that automated hyperparameter optimization is advantageous for systematic exploration and robust performance estimation. The manual model, while slightly more accurate on the test set, may risk overfitting without cross-validation.
+
+---
+
+### Practical Implications
+
+The high predictive performance of the SVM model makes it a valuable tool for businesses to proactively identify customers at risk of churn. By leveraging these predictions, targeted marketing and customer retention strategies can be designed to reduce churn and improve customer lifetime value.
+
+on the other hand, the modeling approach successfully leveraged both linear and non-linear relationships in the data. The linear model provided interpretable insights into CLTV drivers, while the SVM offered a robust, data-driven method for predicting customer churn.
+
 
 ## Neural Network Analysis
 
@@ -51,9 +163,7 @@ The neural network approach was designed to predict customer churn by leveraging
 
 Understanding the distribution of our target variable provides crucial insights into the modeling challenge we face. The tenure distribution by churn status reveals important patterns in customer behavior that inform our neural network design.
 
-```{r tenure-distribution-plot, echo=FALSE, fig.cap="Tenure Distribution by Churn Status", fig.align='center', out.width='85%'}
-knitr::include_graphics("Plots/tenure_churn_distribution.png")
-```
+
 
 As illustrated in the visualization above, customers who churn (indicated in teal) are predominantly concentrated in the early tenure periods, particularly within the first few months of service. This distribution shows a clear inverse relationship between tenure and churn propensity, with the vast majority of churning customers having relatively short relationships with the company. Conversely, customers with longer tenure (shown in coral) demonstrate significantly lower churn rates, suggesting that customer loyalty strengthens over time. This imbalanced distribution presents both opportunities and challenges for our neural network model, as it must learn to distinguish between early-stage customers who will churn versus those who will develop into long-term loyal customers.
 
