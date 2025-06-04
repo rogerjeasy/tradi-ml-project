@@ -35,7 +35,7 @@ head(tr_data)
 initial_model <- lm(CLTV ~ Age + Avg.Monthly.GB.Download + Avg.Monthly.Long.Distance.Charges + 
                       Churn.Score + Monthly.Charge + Tenure.in.Months + Total.Charges + 
                       Total.Long.Distance.Charges + Under.30 + Unlimited.Data + 
-                      Device.Protection.Plan + Contract + Payment.Method + Internet.Type, 
+                      Device.Protection.Plan + Contract + Payment.Method,
                     data = tr_data)
 summary(initial_model)
 
@@ -55,10 +55,14 @@ vif(model_nonlinear)
 
 # visualization for CLTV against Tenure.in.Months
 library(ggplot2)
-ggplot(tr_data, aes(x = Tenure.in.Months, y = CLTV)) +
+
+p1 <- ggplot(tr_data, aes(x = Tenure.in.Months, y = CLTV)) +
   geom_point() +
   geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red") +
   labs(title = "Effect of Tenure on CLTV (Polynomial)", x = "Tenure in Months", y = "CLTV")
+
+ggsave("Plots/cltv_vs_tenure.png", plot = p1, width = 8, height = 5)
+print(p1)
 
 
 # 6.  Model Selection:
@@ -72,10 +76,17 @@ summary(step_model_nonlinear)
 
 plot(model_nonlinear$residuals)
 hist(model_nonlinear$residuals)
+png("Plots/qqline_plot.png", width = 800, height = 600)  
 qqnorm(model_nonlinear$residuals)
 qqline(model_nonlinear$residuals)
-plot(model_nonlinear, which = 4)  
+dev.off()                                                
+png("Plots/cooks_distance.png", width = 800, height = 600)
+plot(model_nonlinear, which = 4) 
+dev.off()
+png("Plots/residuals_vs_leverage.png", width = 800, height = 600)
 plot(model_nonlinear, which = 5)
+dev.off()
+
 ################################################################################
 # Remarks: model_nonlinear performs far better than the initial model
 # as it has adjusted R2 = 0.20, while the initial model has adjusted R2 = 0.164
@@ -113,15 +124,19 @@ print(sorted_cor_list)
 
 # 4. Preparing Data for Modeling
 X <- as.matrix(tr_data[, -which(names(tr_data) == "Churn")])  # Remove target column (Churn)
-y <- tr_data$Churn  # Target variable (Churn)
+y <- as.numeric(as.character(tr_data$Churn))
+
 
 # 5. Fitting Lasso Regression Model
 cv_lasso <- cv.glmnet(X, y, alpha = 1)
 best_lambda <- cv_lasso$lambda.min
 print(paste("Best lambda:", best_lambda))
 
+
 # 6. Plotting and Interpreting Lasso Results
+png("Plots/lasso_cv_plot.png", width = 800, height = 600)
 plot(cv_lasso)
+dev.off()
 lasso_coefficients <- coef(cv_lasso, s = "lambda.min")
 print(lasso_coefficients)
 
@@ -180,15 +195,17 @@ ggplot(train_data, aes(x = Tenure.in.Months, fill = Churn)) +
 # 11. Support Vector Machine (SVM) Model Training
 X_train <- train_data[, -which(names(train_data) == "Churn")]
 y_train <- train_data$Churn
+X_train_num <- model.matrix(~ . -1, data = X_train)
 X_test <- test_data[, -which(names(test_data) == "Churn")]
+X_test_num <- model.matrix(~ . -1, data = X_test)
 y_test <- test_data$Churn  # Define y_test
 
-svm_model_rbf <- svm(X_train, y_train, type = "C-classification", kernel = "radial")
+svm_model_rbf <- svm(X_train_num, y_train, type = "C-classification", kernel = "radial")
 summary(svm_model_rbf)
 
 # 12. Confusion Matrix Evaluation for Model Performance
 # Make predictions on the test data
-svm_predictions <- predict(svm_model_rbf, X_test)
+svm_predictions <- predict(svm_model_rbf, X_test_num)
 
 # Ensure consistent factor levels
 svm_predictions <- factor(svm_predictions, levels = c(0, 1))
