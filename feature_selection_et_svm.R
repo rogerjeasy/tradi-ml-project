@@ -77,6 +77,8 @@ qqnorm(model_nonlinear$residuals)
 qqline(model_nonlinear$residuals)
 plot(model_nonlinear, which = 4)  
 plot(model_nonlinear, which = 5)
+list.files("Plots")
+
 ################################################################################
 # Remarks: model_nonlinear performs far better than the initial model
 # as it has adjusted R2 = 0.20, while the initial model has adjusted R2 = 0.164
@@ -116,7 +118,9 @@ print(sorted_cor_list)
 
 # 4. Preparing Data for Modeling
 X <- as.matrix(tr_data[, -which(names(tr_data) == "Churn")])  # Remove target column (Churn)
-y <- tr_data$Churn  # Target variable (Churn)
+y <- as.numeric(as.character(tr_data$Churn))
+table(y)
+sum(is.na(X))
 
 # 5. Fitting Lasso Regression Model
 cv_lasso <- cv.glmnet(X, y, alpha = 1)
@@ -183,15 +187,17 @@ ggplot(train_data, aes(x = Tenure.in.Months, fill = Churn)) +
 # 11. Support Vector Machine (SVM) Model Training
 X_train <- train_data[, -which(names(train_data) == "Churn")]
 y_train <- train_data$Churn
+X_train_num <- model.matrix(~ . -1, data = X_train)
 X_test <- test_data[, -which(names(test_data) == "Churn")]
+X_test_num <- model.matrix(~ . -1, data = X_test)
 y_test <- test_data$Churn  # Define y_test
 
-svm_model_rbf <- svm(X_train, y_train, type = "C-classification", kernel = "radial")
+svm_model_rbf <- svm(X_train_num, y_train, type = "C-classification", kernel = "radial")
 summary(svm_model_rbf)
 
 # 12. Confusion Matrix Evaluation for Model Performance
 # Make predictions on the test data
-svm_predictions <- predict(svm_model_rbf, X_test)
+svm_predictions <- predict(svm_model_rbf, X_test_num)
 
 # Ensure consistent factor levels
 svm_predictions <- factor(svm_predictions, levels = c(0, 1))
