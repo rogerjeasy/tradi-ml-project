@@ -62,7 +62,7 @@ p1 <- ggplot(tr_data, aes(x = Tenure.in.Months, y = CLTV)) +
   labs(title = "Effect of Tenure on CLTV (Polynomial)", x = "Tenure in Months", y = "CLTV")
 
 ggsave("Plots/cltv_vs_tenure.png", plot = p1, width = 8, height = 5)
-print(p1)
+
 
 
 # 6.  Model Selection:
