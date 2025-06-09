@@ -199,12 +199,26 @@ Cross-validation techniques were employed to assess model generalization capabil
 
 ### Approach and Methodology
 
-The Poisson Generalized Linear Model was specifically designed to predict count-based outcomes, focusing on the number of customer referrals as our target variable. This approach recognizes that referral behavior follows a count distribution where events are discrete, non-negative integers with specific statistical properties. The Poisson regression framework provides a natural fit for modeling such count phenomena while maintaining interpretability through its linear predictor structure.
+The Poisson Generalized Linear Model analysis focused on understanding and predicting customer referral behavior, recognizing that the number of referrals represents a fundamental measure of customer satisfaction and loyalty. This count-based modeling approach provides crucial insights into the factors that drive customers to recommend our telecommunications services to others, enabling the development of more effective referral programs and customer advocacy strategies.
+The analysis began with a comprehensive examination of the referral count distribution across our customer base. The data revealed a diverse pattern of referral behavior, with customers generating anywhere from zero to eleven referrals during the observation period. The distribution shows that a substantial portion of customers (2,282 out of 4,225) made no referrals, while others demonstrated varying levels of advocacy, with notable numbers of customers providing one, two, or multiple referrals to potential new customers.
+
 
 ```{r referrals-distribution-plot, echo=FALSE, fig.cap="Number of Referrals Distribution", fig.align='center', out.width='85%'}
 knitr::include_graphics("Plots/number_referrals_distribution.png")
 ```
 
+```{r count-distribution, echo=FALSE}
+referral_dist <- data.frame(
+  Number_of_Referrals = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+  Customer_Count = c(2282, 642, 136, 158, 137, 160, 130, 167, 116, 149, 146, 2),
+  Percentage = round(c(2282, 642, 136, 158, 137, 160, 130, 167, 116, 149, 146, 2) / 4225 * 100, 1)
+)
+
+knitr::kable(referral_dist,
+             caption = "Distribution of Customer Referral Counts",
+             col.names = c("Number of Referrals", "Customer Count", "Percentage (%)"),
+             align = "ccc")
+```
 The methodology emphasizes the importance of understanding the underlying data generating process for count outcomes. Unlike continuous variables that can take any value within a range, count data exhibits specific characteristics including non-negativity, integer values, and often a relationship between variance and mean. The Poisson GLM approach accommodates these characteristics through appropriate distributional assumptions and link function selection.
 
 ### Feature Selection for Count Modeling
@@ -331,18 +345,94 @@ The simpler architecture also enhances model interpretability, making it easier 
 
 ## Results Analysis and Strategic Insights - Poisson GLM
 
-The Poisson GLM analysis revealed significant relationships between customer characteristics and referral behavior that provide valuable strategic insights for customer relationship management. The model successfully captured the count nature of referral data while providing interpretable coefficient estimates that translate directly into business understanding.
+### Statistical Model Results and Interpretation
+The quasi-Poisson GLM analysis revealed several statistically significant relationships that provide actionable insights for customer relationship management and referral program optimization. The model demonstrates that customer tenure represents the strongest positive predictor of referral behavior, with each additional month of customer tenure associated with a 1.2% increase in the expected referral rate. This finding underscores the importance of customer retention strategies, as longer-tenured customers not only provide stable revenue but also become valuable advocates for service acquisition.
 
-Statistical testing confirmed the significance of key predictors while controlling for potential confounding variables. The rate ratio interpretations indicate that certain customer segments demonstrate substantially higher referral propensities, enabling targeted strategies for referral program optimization.
+```{r count-predi, echo=FALSE}
+# Create a table of key coefficient interpretations
+coeff_table <- data.frame(
+  Predictor = c("Tenure (per month)", "One Year Contract", "Two Year Contract", 
+                "Satisfaction Score 3", "Satisfaction Score 4", "Satisfaction Score 5",
+                "Customer Churn", "Credit Card Payment"),
+  Rate_Ratio = c(1.0116, 1.1013, 1.1529, 0.6176, 0.6022, 0.6511, 0.1989, 1.0495),
+  Percentage_Change = c("+1.2%", "+10.1%", "+15.3%", "-38.2%", "-39.8%", "-34.9%", "-80.1%", "+5.0%"),
+  Interpretation = c("Higher tenure increases referrals", "Modest increase vs month-to-month",
+                    "Strong increase vs month-to-month", "Significant decrease vs baseline",
+                    "Largest decrease vs baseline", "Notable decrease vs baseline",
+                    "Dramatic reduction in referrals", "Slight increase vs other methods")
+)
 
-The overdispersion analysis revealed that referral counts exhibit greater variability than pure Poisson assumptions would suggest, leading to the adoption of quasi-Poisson estimation for more robust inference. This finding aligns with real-world business observations that referral behavior involves complex social and psychological factors beyond simple count processes.
+knitr::kable(coeff_table,
+             caption = "Key Predictors of Customer Referral Behavior",
+             col.names = c("Predictor Variable", "Rate Ratio", "% Change", "Business Interpretation"),
+             align = "lccc")
+```
 
-From a strategic perspective, the model enables identification of high-value customers who are likely to generate multiple referrals, supporting both customer retention priorities and acquisition cost optimization. The quantitative framework provides foundation for referral program design, incentive structure optimization, and customer segment prioritization strategies.
+Contract commitment levels demonstrate a clear positive relationship with referral behavior, revealing important insights about customer engagement and advocacy. Customers with one-year contracts show a 10.1% increase in expected referral rates compared to month-to-month customers, while those with two-year contracts demonstrate an even stronger 15.3% increase. These findings suggest that customers who make longer-term commitments to our services develop stronger satisfaction levels and become more willing to recommend our offerings to others.
 
-## Comparative Model Insights
+Customer satisfaction scores reveal a compelling pattern that provides crucial guidance for service quality management. While customers with satisfaction score 2 show a modest 10.9% increase in referral rates compared to the baseline, those with satisfaction scores 3, 4, and 5 demonstrate substantial decreases of 38.2%, 39.8%, and 34.9% respectively. This counterintuitive finding warrants further investigation into the satisfaction scoring methodology and may indicate that customers with moderate satisfaction levels are more likely to actively promote services than those with either very high or very low satisfaction ratings.
 
-The parallel implementation of neural networks and Poisson GLM approaches demonstrates the value of methodology diversity in customer analytics. While the neural network excels at capturing complex non-linear patterns in churn prediction, the Poisson GLM provides interpretable insights into count-based behaviors with clear statistical inference frameworks.
+The most dramatic relationship observed in the model concerns customer churn status. Customers who have churned or are in the process of churning show an 80.1% reduction in referral rates compared to loyal customers. This finding, while statistically significant, also makes intuitive business sense, as dissatisfied customers who leave the service are naturally unlikely to recommend it to others. This relationship reinforces the critical importance of retention strategies not only for revenue preservation but also for maintaining referral flow.
 
-Both approaches contribute complementary perspectives to customer relationship management strategy, with neural networks supporting predictive accuracy priorities and Poisson models enabling causal inference and business rule development. The combined insights enhance our understanding of customer behavior across multiple dimensions while supporting both tactical and strategic decision-making processes.
+### Model Performance and Validation
+The Poisson GLM demonstrated solid predictive performance when evaluated against the test dataset. The model achieved a Root Mean Squared Error (RMSE) of 2.9005 and a Mean Absolute Error (MAE) of 2.1880, indicating that predictions typically deviate from actual referral counts by approximately 2-3 referrals. While these error rates reflect the inherent difficulty in predicting individual customer behavior, they provide sufficient accuracy for strategic planning and program design purposes.
 
-The successful implementation of both methodologies establishes a robust analytical foundation for ongoing customer analytics initiatives and demonstrates the organization's capability to leverage advanced statistical techniques for business value creation.
+### Model Diagnostics and Validation
+Comprehensive diagnostic analysis was conducted to ensure the reliability and appropriateness of our Poisson GLM approach. The diagnostic evaluation encompassed multiple dimensions of model adequacy, including residual patterns, distributional assumptions, and potential influential observations that could affect model reliability.
+```{r poisson-diagno, echo=FALSE}
+knitr::include_graphics("Plots/poisson_diagnostics.png")
+```
+
+The residuals versus fitted values plot reveals the expected pattern for count data models, where residual variability increases with predicted values due to the inherent variance structure of count distributions. The diagnostic shows appropriate model behavior with no systematic patterns that would indicate fundamental model misspecification. The funnel-shaped pattern of residuals is characteristic of Poisson-family models and confirms that our quasi-Poisson adjustment appropriately addresses the overdispersion observed in the data.
+
+The Q-Q plot for standardized deviance residuals demonstrates that our model assumptions are reasonably well satisfied, with most observations following the expected theoretical distribution. While some deviation appears in the extreme tails, this is typical for count data models and does not indicate serious violations of model assumptions. The scale-location plot confirms that the variance structure is appropriately modeled, while the residuals versus leverage plot identifies a few observations with higher influence, though none appear to be problematic outliers that would compromise model integrity.
+
+### Feature Importance and Effect Magnitudes
+The coefficient visualization provides clear insights into the relative importance and direction of effects for each predictor variable in our referral behavior model. This analysis enables stakeholders to understand both the magnitude and business significance of different customer characteristics in driving referral activity.
+
+```{r poisson-coeffi, echo=FALSE}
+knitr::include_graphics("Plots/poisson_coefficients.png")
+```
+
+The coefficient plot reveals the substantial negative impact of customer churn on referral behavior, with churned customers showing the largest negative coefficient in the model. This finding reinforces the critical business importance of retention strategies, as losing customers not only eliminates direct revenue but also significantly reduces organic customer acquisition through referrals. The magnitude of this effect dwarfs other predictors, highlighting churn prevention as a dual-purpose strategy for both revenue protection and marketing effectiveness.
+
+```{r poisson-forest-plot, echo=FALSE}
+knitr::include_graphics("Plots/poisson_forest_plot.png")
+```
+The forest plot provides a comprehensive view of effect magnitudes with their associated statistical uncertainty, enabling more nuanced interpretation of predictor importance. The visualization clearly demonstrates that tenure and churn status represent the most statistically reliable predictors, with confidence intervals that do not cross the null effect line at 1.0. Contract commitment effects show meaningful positive associations with referral behavior, though with wider confidence intervals reflecting greater uncertainty in these estimates.
+
+Satisfaction scores demonstrate interesting patterns, with scores 3, 4, and 5 all showing negative coefficients of substantial magnitude. This counterintuitive finding suggests that the relationship between satisfaction and referral behavior may be more complex than initially anticipated, potentially indicating that customers with moderate satisfaction levels are more motivated to actively engage in referral activities than those reporting the highest satisfaction scores.
+
+Contract commitment variables show positive coefficients, with two-year contracts demonstrating the strongest positive effect on referral behavior. This pattern supports the business case for promoting longer-term commitments, as these customers not only provide revenue stability but also contribute more actively to customer acquisition efforts. The tenure variable, while positive, shows a relatively modest coefficient, indicating that while relationship length matters for referrals, the effect accumulates gradually over time rather than creating dramatic shifts in advocacy behavior.
+
+```{r cv-results-table, echo=FALSE}
+cv_summary <- data.frame(
+  Metric = c("Mean RMSE across 5 folds", "Standard deviation", "Performance consistency", "Generalization capability"),
+  Value = c("2.8355", "±0.0582", "High", "Good")
+)
+
+knitr::kable(cv_summary,
+             caption = "Cross-Validation Performance Summary",
+             col.names = c("Performance Metric", "Result"),
+             align = "lc")
+```
+
+Cross-validation analysis confirmed the model's stability and generalization capability, with a mean RMSE of 2.8355 across five folds and a standard deviation of 0.0582. This low variability in performance across different data samples indicates that the model relationships are robust and likely to maintain predictive accuracy when applied to new customer populations.
+
+The confusion matrix analysis for count predictions revealed the model's ability to distinguish between different levels of referral activity. While perfect prediction of exact referral counts remains challenging due to the inherent variability in human behavior, the model successfully identifies general referral propensity patterns that support strategic decision-making for referral program design and customer segmentation initiatives.
+
+### Business Applications and Strategic Value
+The Poisson GLM results enable several high-value business applications that can directly impact customer acquisition costs and referral program effectiveness. The model's identification of tenure as the strongest predictor of referral behavior supports investment in retention strategies as a dual-purpose initiative that both preserves existing revenue and enhances organic customer acquisition through increased referral activity.
+
+Contract commitment insights provide clear guidance for product design and customer engagement strategies. The positive relationship between contract length and referral rates suggests that incentivizing longer-term commitments not only improves revenue predictability but also creates a more engaged customer base that actively promotes our services. This finding supports the development of attractive long-term contract offerings and retention incentives that encourage customers to extend their commitment periods.
+
+The satisfaction score patterns, while requiring further investigation, highlight the importance of understanding customer sentiment dynamics and their relationship to advocacy behavior. The results suggest that referral program design should consider customer satisfaction levels when targeting potential advocates, potentially focusing efforts on customers with moderate satisfaction levels who may be most responsive to referral incentives.
+
+Payment method preferences also provide actionable insights, with credit card users showing a 5.0% increase in referral rates compared to other payment methods. This finding suggests that customers who choose more convenient payment options may also be more likely to engage in positive word-of-mouth activities, supporting initiatives that encourage electronic payment adoption.
+
+### Model Limitations and Implementation Considerations
+While the Poisson GLM provides valuable insights into referral behavior patterns, successful implementation requires careful attention to several important considerations. The substantial overdispersion observed in the data indicates that referral behavior involves complex factors beyond those captured in our current model. Future model enhancements might consider additional variables such as social network characteristics, geographic factors, or detailed service usage patterns that could explain additional variance in referral behavior.
+
+The model's temporal stability should be monitored regularly, as customer behavior patterns and market conditions evolve continuously. Quarterly model validation and annual recalibration procedures will help ensure that coefficient estimates remain accurate and relevant for strategic decision-making. Additionally, the satisfaction score relationships warrant deeper investigation to understand the underlying mechanisms driving the observed patterns.
+
+The organization should also consider establishing clear protocols for translating model insights into operational referral program decisions. This includes developing guidelines for customer targeting based on model predictions, setting appropriate incentive levels for different customer segments, and measuring the business impact of model-driven initiatives to validate the approach's effectiveness.

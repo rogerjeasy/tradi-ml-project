@@ -669,3 +669,77 @@ p4 <- ggplot(coef_df, aes(x = reorder(Variable, Coefficient), y = Coefficient)) 
   theme_minimal()
 
 print(p4)
+ggsave("Plots/poisson_glm_coefficients.png", plot = p4, 
+       width = 10, height = 6, dpi = 300)
+
+# ==============================================================================
+# ADDITIONAL POISSON GLM VISUALIZATION PLOTS
+# ==============================================================================
+
+# RATE RATIOS FOREST PLOT WITH CONFIDENCE INTERVALS
+# ==============================================================================
+
+create_forest_plot <- function(model) {
+  # Extract coefficients and confidence intervals
+  coef_summary <- summary(model)$coefficients
+  
+  # Calculate confidence intervals for rate ratios
+  coef_estimates <- coef(model)[-1]  # Exclude intercept
+  coef_se <- coef_summary[-1, "Std. Error"]  # Exclude intercept
+  
+  # Calculate 95% confidence intervals for coefficients
+  lower_ci <- coef_estimates - 1.96 * coef_se
+  upper_ci <- coef_estimates + 1.96 * coef_se
+  
+  # Transform to rate ratios (exp scale)
+  rate_ratios <- exp(coef_estimates)
+  lower_rr <- exp(lower_ci)
+  upper_rr <- exp(upper_ci)
+  
+  # Create forest plot data
+  forest_data <- data.frame(
+    Variable = names(coef_estimates),
+    Rate_Ratio = rate_ratios,
+    Lower_CI = lower_rr,
+    Upper_CI = upper_rr,
+    P_Value = coef_summary[-1, "Pr(>|t|)"],  # For quasi-Poisson
+    Significant = ifelse(coef_summary[-1, "Pr(>|t|)"] < 0.05, "Significant", "Not Significant")
+  )
+  
+  # Reorder by rate ratio
+  forest_data$Variable <- factor(forest_data$Variable, 
+                                 levels = forest_data$Variable[order(forest_data$Rate_Ratio)])
+  
+  # Create forest plot
+  p_forest <- ggplot(forest_data, aes(x = Rate_Ratio, y = Variable, color = Significant)) +
+    geom_vline(xintercept = 1, linetype = "dashed", color = "gray50", size = 1) +
+    geom_errorbarh(aes(xmin = Lower_CI, xmax = Upper_CI), height = 0.2, size = 1) +
+    geom_point(size = 3) +
+    scale_color_manual(values = c("Significant" = "red", "Not Significant" = "gray60")) +
+    scale_x_continuous(trans = "log", breaks = c(0.1, 0.2, 0.5, 1, 2, 5)) +
+    labs(
+      title = "Rate Ratios with 95% Confidence Intervals",
+      subtitle = "Effect of predictors on referral count (Quasi-Poisson GLM)",
+      x = "Rate Ratio (Log Scale)",
+      y = "Predictor Variables",
+      color = "Statistical Significance"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 14),
+      plot.subtitle = element_text(hjust = 0.5, size = 10),
+      legend.position = "bottom"
+    ) +
+    annotate("text", x = 0.15, y = nrow(forest_data) * 0.9, 
+             label = "Decreases\nReferrals", size = 3, color = "blue") +
+    annotate("text", x = 3, y = nrow(forest_data) * 0.9, 
+             label = "Increases\nReferrals", size = 3, color = "darkgreen")
+  
+  return(p_forest)
+}
+
+# Generate forest plot
+forest_plot <- create_forest_plot(final_poisson_model)
+print(forest_plot)
+ggsave("Plots/poisson_forest_plot.png", plot = forest_plot, 
+       width = 10, height = 8, dpi = 300)
