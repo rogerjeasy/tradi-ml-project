@@ -21,7 +21,7 @@ set.seed(123)
 # Load the cleaned telco dataset
 source("clean_telco.R")
 
-# Load the data (assuming 'telco' is the cleaned dataset)
+# Load the data 
 tr_clean <- telco
 
 # Display dataset structure
@@ -349,6 +349,108 @@ cat(sprintf("Best Architecture: %s\n", paste(best_model_info$name, collapse = ",
 cat(sprintf("Test Set Accuracy: %.4f\n", nn_final_accuracy))
 cat(sprintf("Test Set Sensitivity: %.4f\n", nn_final_sensitivity))
 cat(sprintf("Test Set Specificity: %.4f\n", nn_final_specificity))
+
+# ==============================================================================
+# NEURAL NETWORK VISUALIZATION PLOTS
+# ==============================================================================
+library(reshape2)
+library(RColorBrewer)
+
+# 1. MODEL PERFORMANCE COMPARISON BAR CHART
+# ==============================================================================
+
+# Extract performance metrics from results
+create_performance_comparison <- function(results_1, results_2, results_3) {
+  
+  # Create performance data frame by extracting from actual results
+  performance_data <- data.frame(
+    Architecture = rep(c("Architecture 1 (8)", "Architecture 2 (6,4)", "Architecture 3 (8,5,3)"), 3),
+    Metric = rep(c("Accuracy", "Sensitivity", "Specificity"), each = 3),
+    Value = c(
+      # Extract Accuracy values
+      results_1$accuracy, results_2$accuracy, 
+      ifelse(inherits(nn_model_3, "try-error"), NA, results_3$accuracy),
+      # Extract Sensitivity values
+      results_1$sensitivity, results_2$sensitivity,
+      ifelse(inherits(nn_model_3, "try-error"), NA, results_3$sensitivity),
+      # Extract Specificity values
+      results_1$specificity, results_2$specificity,
+      ifelse(inherits(nn_model_3, "try-error"), NA, results_3$specificity)
+    )
+  )
+  
+  # Remove rows with NA values (failed models)
+  performance_data <- performance_data[!is.na(performance_data$Value), ]
+  
+  # Create the bar chart
+  p_performance <- ggplot(performance_data, aes(x = Architecture, y = Value, fill = Metric)) +
+    geom_bar(stat = "identity", position = "dodge", alpha = 0.8) +
+    scale_fill_brewer(type = "qual", palette = "Set2") +
+    labs(title = "Neural Network Architecture Performance Comparison",
+         subtitle = "Accuracy, Sensitivity, and Specificity Across Different Architectures",
+         x = "Neural Network Architecture",
+         y = "Performance Metric Value",
+         fill = "Metric") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          plot.title = element_text(hjust = 0.5),
+          plot.subtitle = element_text(hjust = 0.5)) +
+    scale_y_continuous(limits = c(0, 1), labels = scales::percent_format()) +
+    geom_text(aes(label = sprintf("%.3f", Value)), 
+              position = position_dodge(width = 0.9), 
+              vjust = -0.3, size = 3)
+  
+  return(p_performance)
+}
+
+# Generate the performance comparison plot
+performance_plot <- create_performance_comparison(results_1, results_2, results_3)
+print(performance_plot)
+ggsave("Plots/nn_performance_comparison.png", plot = performance_plot, 
+       width = 10, height = 6, dpi = 300)
+
+# 2. CONFUSION MATRIX HEATMAP
+# ==============================================================================
+
+# Extract confusion matrix from best model and create heatmap
+create_confusion_heatmap <- function(confusion_matrix) {
+  # Extract the confusion matrix table
+  cm_table <- as.table(confusion_matrix$table)
+  
+  # Convert to data frame for ggplot
+  cm_df <- as.data.frame(cm_table)
+  names(cm_df) <- c("Predicted", "Actual", "Count")
+  
+  # Create heatmap
+  p_confusion <- ggplot(cm_df, aes(x = Actual, y = Predicted, fill = Count)) +
+    geom_tile(color = "white") +
+    scale_fill_gradient(low = "white", high = "steelblue") +
+    geom_text(aes(label = Count), vjust = 0.5, size = 6, color = "black") +
+    labs(title = "Confusion Matrix - Best Neural Network Model",
+         subtitle = paste("Architecture:", best_model_info$name),
+         x = "Actual Class",
+         y = "Predicted Class") +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5),
+          plot.subtitle = element_text(hjust = 0.5),
+          axis.text = element_text(size = 12),
+          legend.title = element_text(size = 10)) +
+    coord_fixed()
+  
+  return(p_confusion)
+}
+
+# Generate confusion matrix heatmap
+confusion_heatmap <- create_confusion_heatmap(final_results$confusion)
+print(confusion_heatmap)
+ggsave("Plots/nn_confusion_heatmap.png", plot = confusion_heatmap, 
+       width = 8, height = 6, dpi = 300)
+
+# Print summary of all generated plots
+cat("\n=== GENERATED NEURAL NETWORK PLOTS ===\n")
+cat("1. Performance Comparison Bar Chart: Plots/nn_performance_comparison.png\n")
+cat("2. Confusion Matrix Heatmap: Plots/nn_confusion_heatmap.png\n")
+cat("\nAll plots have been saved to the Plots/ directory\n")
 
 # ==============================================================================
 # POISSON GLM ANALYSIS - NUMBER OF REFERRALS PREDICTION

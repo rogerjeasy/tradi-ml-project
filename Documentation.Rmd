@@ -163,7 +163,9 @@ The neural network approach was designed to predict customer churn by leveraging
 
 Understanding the distribution of our target variable provides crucial insights into the modeling challenge we face. The tenure distribution by churn status reveals important patterns in customer behavior that inform our neural network design.
 
-
+```{r distribution-status-plot, echo=FALSE, fig.cap="Distribution of Churn status", fig.align='center', out.width='85%'}
+knitr::include_graphics("Plots/distributionchurnstatus.png")
+```
 
 As illustrated in the visualization above, customers who churn (indicated in teal) are predominantly concentrated in the early tenure periods, particularly within the first few months of service. This distribution shows a clear inverse relationship between tenure and churn propensity, with the vast majority of churning customers having relatively short relationships with the company. Conversely, customers with longer tenure (shown in coral) demonstrate significantly lower churn rates, suggesting that customer loyalty strengthens over time. This imbalanced distribution presents both opportunities and challenges for our neural network model, as it must learn to distinguish between early-stage customers who will churn versus those who will develop into long-term loyal customers.
 
@@ -236,11 +238,96 @@ Provide your analysis here
 
 ## Results Analysis and Business Implications - Neural Networks
 
-The neural network analysis revealed that the two-layer architecture (6,4 neurons) emerged as the optimal configuration, achieving the highest test set accuracy among all evaluated architectures. This model demonstrated balanced performance across sensitivity and specificity metrics, indicating reliable prediction capabilities for both churn and retention scenarios.
+The neural network analysis evaluated three distinct architectures to identify the optimal configuration for customer churn prediction. Each architecture was designed to capture different levels of complexity in the customer behavioral patterns.
 
-The model's performance suggests that customer churn patterns contain meaningful non-linear relationships that can be successfully captured through neural network approaches. The correlation analysis revealed that tenure in months, satisfaction scores, and monthly charges serve as the strongest individual predictors of churn behavior, aligning with business intuition about customer retention drivers.
+### Architecture Performance Summary
 
-From a business perspective, the neural network provides actionable insights for customer retention strategies. The model's ability to identify at-risk customers with high accuracy enables proactive intervention programs, potentially reducing churn rates and improving customer lifetime value. The balanced performance across different customer segments suggests the model can support targeted marketing campaigns and personalized retention offers.
+```{r nn-results-table, echo=FALSE}
+# Create results summary table
+nn_results_summary <- data.frame(
+  Architecture = c("Architecture 1 (8)", "Architecture 2 (6,4)", "Architecture 3 (8,5,3)"),
+  Hidden_Layers = c("Single (8 neurons)", "Two (6, 4 neurons)", "Three (8, 5, 3 neurons)"),
+  Accuracy = c(0.9515, 0.9515, 0.9491),
+  Sensitivity = c(0.9818, 0.9868, 0.9851),
+  Specificity = c(0.8750, 0.8625, 0.8583)
+)
+
+knitr::kable(nn_results_summary, 
+             caption = "Neural Network Architecture Performance Comparison",
+             col.names = c("Architecture", "Hidden Layers", "Accuracy", "Sensitivity", "Specificity"),
+             digits = 4,
+             align = "lcccc")
+```
+
+```{r nn-performance-comparison, echo=FALSE, fig.cap="Neural Network Architecture Performance Comparison", fig.align='center', out.width='85%'}
+knitr::include_graphics("Plots/nn_performance_comparison.png")
+```
+
+Based on comprehensive evaluation across multiple performance metrics, **Architecture 1** with a single hidden layer containing 8 neurons emerged as the optimal configuration. While all three architectures achieved comparable accuracy levels (approximately 95%), Architecture 1 demonstrated the best balance of performance metrics and computational efficiency.
+
+### Confusion Matrix Results
+
+The best performing model (Architecture 1) achieved the following classification results on the test dataset:
+
+```{r confusion-matrix-display, echo=FALSE}
+# Display confusion matrix results
+confusion_results <- matrix(c(594, 11, 30, 210), nrow = 2, byrow = TRUE)
+rownames(confusion_results) <- c("Predicted: No Churn", "Predicted: Churn")
+colnames(confusion_results) <- c("Actual: No Churn", "Actual: Churn")
+
+knitr::kable(confusion_results,
+             caption = "Confusion Matrix - Neural Network Architecture 1")
+```
+
+### Key Performance Metrics and Statistical Significance
+
+The final neural network model demonstrated exceptional predictive capability:
+
+- **Overall Accuracy**: 95.15% (95% CI: 93.47% - 96.50%)
+- **Sensitivity**: 98.18% - Excellent ability to identify customers who will not churn
+- **Specificity**: 87.50% - Strong capability in detecting customers at risk of churn
+- **Positive Predictive Value**: 95.19% - High precision in non-churn predictions
+- **Negative Predictive Value**: 95.02% - Reliable identification of churn cases
+- **Balanced Accuracy**: 92.84% - Robust performance across both classes
+
+
+The model's performance significantly exceeds the no-information rate (71.6%) with a p-value < 2.2e-16, indicating that the neural network successfully learned meaningful patterns in customer behavior data. The Kappa statistic of 0.8778 suggests excellent agreement between predicted and actual classifications.
+
+
+### Model Strengths
+
+1. **High Sensitivity (98.18%)**: The model excels at correctly identifying customers who will remain loyal, enabling efficient resource allocation for retention efforts.
+
+2. **Balanced Performance**: With both sensitivity and specificity above 87%, the model provides reliable predictions across different customer segments.
+
+3. **Low False Negative Rate**: Only 30 out of 240 churning customers were misclassified, minimizing the risk of missing at-risk customers.
+
+### Practical Applications
+
+The neural network's strong performance enables several strategic applications:
+
+- **Proactive Retention Campaigns**: Customer retention campaigns can now be designed with unprecedented precision and confidence. By identifying at-risk customers with such high accuracy, marketing and customer service teams can focus their efforts and resources on customers who would genuinely benefit from intervention, rather than applying broad-based retention strategies that may be inefficient or unnecessary. This targeted approach not only improves the effectiveness of retention efforts but also optimizes resource allocation by directing attention where it can have the greatest impact.
+- **Resource Optimization**: The predictive insights can inform broader strategic planning and business forecasting. Understanding which customer characteristics and behaviors most strongly predict retention allows for more accurate revenue projections, capacity planning, and strategic decision-making. The model's insights can guide product development priorities, service improvement initiatives, and market expansion strategies by highlighting the factors that drive customer loyalty and long-term value.
+- **Customer Segmentation**: The model enables sophisticated customer segmentation strategies that go beyond traditional demographic or behavioral categorizations. By incorporating churn probability as a key segmentation criterion, the organization can develop nuanced customer segments that reflect both current value and future retention likelihood. This enhanced segmentation supports more personalized service delivery, targeted product recommendations, and customized communication strategies that resonate with specific customer groups and their unique retention drivers.
+
+### Model Limitations and Considerations
+
+While the neural network demonstrates excellent performance, several considerations should guide its deployment:
+
+1. **Class Imbalance**: The model was trained on data with approximately 72% non-churning customers, which may influence prediction thresholds in different customer populations.
+
+2. **Feature Dependencies**: The model's performance relies on the availability and quality of the selected features, requiring consistent data collection practices.
+
+3. **Temporal Stability**: Model performance should be monitored over time to ensure predictions remain accurate as customer behavior patterns evolve.
+
+### Comparison with Alternative Architectures
+
+The decision to select Architecture 1 over more complex alternatives reflects a carefully balanced consideration of multiple factors beyond raw predictive performance. While Architecture 2 demonstrated marginally higher sensitivity at 98.68%, this advantage came at the cost of reduced specificity and increased computational complexity without meaningful improvements in overall accuracy. Similarly, Architecture 3's three-layer configuration showed competitive performance but introduced additional complexity that could potentially lead to overfitting and reduced model interpretability without commensurate benefits.
+
+Architecture 1's single hidden layer design offers several practical advantages that prove valuable in business environments. The streamlined architecture requires less computational power for both training and prediction, enabling faster response times and lower operational costs. This efficiency becomes particularly important when the model is deployed at scale, processing predictions for large customer bases or integrating with real-time decision-making systems.
+
+The simpler architecture also enhances model interpretability, making it easier for business stakeholders to understand and trust the model's predictions. This transparency is crucial for building confidence among decision-makers and facilitating the integration of model insights into existing business processes. The reduced complexity also simplifies model maintenance and updates, lowering the technical overhead required for ongoing model management.
+
 
 ## Results Analysis and Strategic Insights - Poisson GLM
 
