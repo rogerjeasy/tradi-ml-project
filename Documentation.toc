@@ -1,0 +1,56 @@
+\contentsline {section}{Introduction}{2}{section*.2}%
+\contentsline {subsection}{Research objectives}{2}{section*.3}%
+\contentsline {subsection}{Modelling toolkit}{2}{section*.4}%
+\contentsline {section}{Background}{3}{section*.5}%
+\contentsline {section}{Method}{3}{section*.6}%
+\contentsline {subsection}{Data Set}{3}{section*.7}%
+\contentsline {subsection}{Research Process}{3}{section*.8}%
+\contentsline {subsection}{SVM and LM}{4}{section*.9}%
+\contentsline {subsubsection}{Linear Model for CLTV}{4}{section*.10}%
+\contentsline {subsubsection}{SVM for Churn Classification}{7}{section*.11}%
+\contentsline {subsubsection}{Final Model Training and Evaluation}{8}{section*.12}%
+\contentsline {subsubsection}{SVM Results}{9}{section*.13}%
+\contentsline {subsubsection}{Practical Implications}{9}{section*.14}%
+\contentsline {subsection}{Neural Network Analysis}{9}{section*.15}%
+\contentsline {subsubsection}{Approach and Methodology}{9}{section*.16}%
+\contentsline {subsubsection}{Feature Selection Strategy}{10}{section*.17}%
+\contentsline {subsubsection}{Model Architecture Design}{10}{section*.18}%
+\contentsline {subsubsection}{Evaluation Metrics and Performance Assessment}{11}{section*.19}%
+\contentsline {subsection}{Poisson GLM Analysis}{11}{section*.20}%
+\contentsline {subsubsection}{Approach and Methodology}{11}{section*.21}%
+\contentsline {subsubsection}{Feature Selection for Count Modeling}{12}{section*.22}%
+\contentsline {subsubsection}{Model Architecture and Statistical Framework}{12}{section*.23}%
+\contentsline {subsubsection}{Evaluation Metrics for Count Prediction}{13}{section*.24}%
+\contentsline {subsection}{General Additive Model \& Binomial Churn}{13}{section*.25}%
+\contentsline {subsubsection}{Feature Selection --- Correlation Analysis \& Multicollinearity Screening}{13}{section*.26}%
+\contentsline {paragraph}{Combined GLM and Variable-Importance Check}{17}{section*.27}%
+\contentsline {subsubsection}{GLM Coefficients Summary -- Final Model}{17}{section*.28}%
+\contentsline {subsubsection}{Key GLM Effects (Exponentiated for Odds-Ratio Interpretation)}{18}{section*.29}%
+\contentsline {subsubsection}{Key Insights from the Final GLM}{18}{section*.30}%
+\contentsline {subsubsection}{Confusion Matrix}{18}{section*.31}%
+\contentsline {subsubsection}{Key Metrics}{19}{section*.32}%
+\contentsline {subsubsection}{Interpretation}{19}{section*.33}%
+\contentsline {subsubsection}{GAM Model}{19}{section*.34}%
+\contentsline {subsubsection}{GAM Model Comparison: REML vs GCV.Cp}{19}{section*.35}%
+\contentsline {subsubsection}{Significant Parametric Effects (Categorical Predictors)}{20}{section*.36}%
+\contentsline {subsubsection}{Approximate Significance of Smooth Terms}{20}{section*.37}%
+\contentsline {subsubsection}{Confusion Matrix Overview}{20}{section*.38}%
+\contentsline {subsubsection}{Key Metrics}{20}{section*.39}%
+\contentsline {subsubsection}{GLM vs GAM --- Performance Snapshot}{20}{section*.40}%
+\contentsline {section}{Results}{21}{section*.41}%
+\contentsline {subsection}{Results Analysis and Business Implications - Neural Networks}{21}{section*.42}%
+\contentsline {subsubsection}{Architecture Performance Summary}{21}{section*.43}%
+\contentsline {subsubsection}{Confusion Matrix Results}{21}{section*.44}%
+\contentsline {subsubsection}{Key Performance Metrics and Statistical Significance}{22}{section*.45}%
+\contentsline {subsubsection}{Model Strengths}{22}{section*.46}%
+\contentsline {subsubsection}{Practical Applications}{22}{section*.47}%
+\contentsline {subsubsection}{Model Limitations and Considerations}{23}{section*.48}%
+\contentsline {subsubsection}{Comparison with Alternative Architectures}{23}{section*.49}%
+\contentsline {subsection}{Results Analysis and Strategic Insights - Poisson GLM}{23}{section*.50}%
+\contentsline {subsubsection}{Statistical Model Results and Interpretation}{23}{section*.51}%
+\contentsline {subsubsection}{Model Performance and Validation}{24}{section*.52}%
+\contentsline {subsubsection}{Model Diagnostics and Validation}{24}{section*.53}%
+\contentsline {subsubsection}{Feature Importance and Effect Magnitudes}{25}{section*.54}%
+\contentsline {subsubsection}{Business Applications and Strategic Value}{27}{section*.55}%
+\contentsline {subsubsection}{Model Limitations and Implementation Considerations}{28}{section*.56}%
+\contentsline {section}{Conclusion}{28}{section*.57}%

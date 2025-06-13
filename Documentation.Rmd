@@ -1,21 +1,19 @@
 ---
 title: "ML1 Telco Customer Analysis - Neural Network & Poisson GLM Documentation"
 author: "Merun Gugelmann, Khan Gulraiz and Roger Bavibidila"
-date: "2025-06-02"
+date: "2025-06-13"
 output:
   pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
+    latex_engine: xelatex
+    toc: yes
+    toc_depth: '3'
+    keep_tex: true
   html_document:
-    toc: true
+    toc: yes
     toc_depth: 3
-    toc_float: true
-    number_sections: true
+    toc_float: yes
+    number_sections: yes
 ---
-
-**Abstract**
-Here is the abstract
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.align = 'center', out.width = '80%')
@@ -32,8 +30,32 @@ set.seed(123)
 ```
 
 # Introduction
+
+Alphawave Telecom’s new smart-home security bundle will succeed only if the firm can first stem its 24 % customer-churn rate. This report studies that challenge by asking two linked questions: *Which modelling approach explains churn drivers most clearly, and which delivers the most accurate churn predictions?*
+
+## Research objectives  
+1. Identify and rank the variables that influence churn.  
+2. Predict churn far enough in advance to trigger targeted retention offers.  
+3. Compare model families on two criteria: interpretability for business insight and out-of-sample predictive performance.
+
+## Modelling toolkit  
+- *Linear Model (LM)* – estimates Customer Lifetime Value (CLTV) for revenue segmentation.  
+- *Support Vector Machine (SVM)* – provides a benchmark churn classifier using engineered features.  
+- *Neural Network (NN)* – tests whether deeper non-linear patterns improve churn prediction.  
+- *Poisson GLM* – models the count of customer referrals as a growth lever.  
+- *Logistic GAM/GLM* – combines categorical and continuous drivers into an interpretable churn-risk score.
+
+By evaluating each model on explanatory clarity and predictive accuracy, we will recommend the technique—or combination of techniques—that best balances business insight with operational decision support. The remainder of the report covers data and methods (Section 2), results (Section 3), and practical implications for Alphawave’s retention strategy (Section 4).
+
 # Background
-## Research Questions and Hypothesis
+
+Alphawave Telecom, a mid-tier carrier active in Switzerland and Austria, is facing rising customer losses as low cost Mobile Virtual Network Operators expand their presence in their market. Leadership is preparing to launch a smart-home security bundle, but the current 24% customer churn rate, a number well above the industry, gives them pause. Stabilizing customer retention has become the company’s immediate priority ahead of the product launch.
+
+The analytics team was tasked with identifying the drivers of churn and developing predictive models to target at-risk customers before they cancel. However, strict General Data Protection Regulation (GDPR) rules prevent Alphawave from sharing personal billing, service usage, or complaint data with external experts. Anonymizing the data carried its own legal risks due to the potential for re-identification. With time running short, the team pursued a different approach.
+
+They started with the public IBM Telco Customer Churn dataset and carefully expanded it using aggregated internal insights. Seasonal usage patterns, complaint histories, service bundles, and regional behaviors were simulated to create a realistic but entirely synthetic dataset. No actual customer records were exposed, fully avoiding GDPR concerns while preserving the key relationships present in the real data.
+
+Once validated, Alphawave released the dataset as an open global challenge. Data scientists worldwide were invited to participate with two objectives: *to identify and explain the key factors driving customer churn, providing Alphawave with a clearer understanding of why customers leave, and to develop predictive models capable of identifying at-risk customers before they cancel.* By evaluating a wide range of modelling approaches, Alphawave aimed to assess which techniques offered the strongest combination of business insight and future predictive performance, selecting the most effective methods to integrate into their long-term retention strategy.
 
 # Method
 
@@ -63,7 +85,7 @@ since the whole work was divided into 3 parts in order to make that all of us co
 ## SVM and LM
 ### Linear Model for CLTV
 
-The initial linear model using all predictors yielded an Adjusted R² of approximately 0.164, indicating limited explanatory power. To improve this, we explored non-linear effects by applying a polynomial transformation of degree 4 to the `Tenure.in.Months` variable. This transformation led to a modest improvement in the model’s Adjusted R², suggesting that the relationship between tenure and CLTV is not purely linear.As can be see in the below mentioned scatterplot. 
+The initial linear model using all predictors yielded an Adjusted R$^2$ of approximately 0.164, indicating limited explanatory power. To improve this, we explored non-linear effects by applying a polynomial transformation of degree 4 to the `Tenure.in.Months` variable. This transformation led to a modest improvement in the model’s Adjusted R$^2$, suggesting that the relationship between tenure and CLTV is not purely linear.As can be see in the below mentioned scatterplot. 
 
 ```{r cltv-vs-tenure-img, echo=FALSE, fig.cap="Effect of Tenure on CLTV (Polynomial)", fig.align='center', out.width='85%'}
 knitr::include_graphics("Plots/cltv_vs_tenure.png")
@@ -246,7 +268,272 @@ The deviance-based measures provide model comparison capabilities that account f
 Cross-validation techniques adapted for count data ensure that performance estimates reflect genuine predictive capability across different customer segments and time periods. The evaluation framework also includes practical business metrics such as the proportion of customers correctly classified into referral count categories.
 
 ## General Additive Model & Binomial Churn
-Provide your analysis here
+
+### Feature Selection — Correlation Analysis & Multicollinearity Screening
+
+```{r count-corr-img, echo=FALSE, fig.cap="Point-Biserial Correlation with Churn (Count Variables)", fig.align='center', out.width='50%'}
+knitr::include_graphics("glm_gam_plots/count_correlation.png")
+```
+
+Point-Biserial Correlation – **Count Variables** (`count_correlation.jpeg`).  
+The first graphic quantifies how each integer-style attribute relates to churn. **Tenure in Months** emerges as the single most influential count variable ($\rho \approx -0.34$): customers who have stayed longer are far less likely to leave. **Number of Referrals** ($\rho \approx -0.28$) and **Number of Dependents** ($\rho \approx -0.22$) show similar—though weaker—protective effects, while **Age** registers only a marginal positive link ($\rho \approx 0.10$). We retained count variables whose absolute correlation exceeded 0.10 and passed significance testing (p < 0.05), ensuring that only materially useful predictors advanced to modelling.
+
+```{r cont-corr-img, echo=FALSE, fig.cap="Point-Biserial Correlation with Churn (Continuous Variables)", fig.align='center', out.width='85%'}
+knitr::include_graphics("glm_gam_plots/cont_correlation_churn.png")
+```
+
+Point-Biserial Correlation – **Continuous Variables** (`cont_correlation_churn.png`).  
+This plot ranks monetary and usage metrics by their linear association with churn. **Monthly Charge** is the sole positive driver of note ($\rho \approx 0.12$), indicating that higher monthly bills elevate attrition risk. Conversely, high-value customers—reflected in **Total Revenue** and **Total Long-Distance Charges** ($\rho \approx -0.20$ to $-0.22$) and in **Customer Lifetime Value** ($\rho \approx -0.11$)—are modestly more loyal. As with the count variables, only continuous predictors with $|\rho| > 0.10$ and p < 0.05 were carried forward.
+
+```{r cat-corr-churn-img, echo=FALSE, fig.cap="Cramér's V Association with Churn (Categorical Variables)", fig.align='center', out.width='85%'}
+knitr::include_graphics("glm_gam_plots/categorical_correlation.png")
+```
+
+Cramér's V – **Categorical Variables** (`categorical_correlation.png`).  
+This chart ranks every categorical predictor by its strength of association with churn. **Satisfaction Score** is overwhelmingly the top driver ($V \approx 0.86$), confirming customer sentiment as the most powerful categorical signal. A second tier—**Internet Type** ($V \approx 0.30$), **Dependents** (0.25), and **Internet Service** (0.23)—demonstrates that product configuration and household composition meaningfully affect retention. Billing- and security-related fields such as **Payment Method**, **Paperless Billing**, and **Online Security** cluster around $V \approx 0.18$–$0.20$, supplying additional explanatory power. Categories with $V < 0.10$ (chiefly streaming-preference flags and minor demographics) add negligible signal and were dropped unless required for business reporting. Consequently, variables with $V \geq 0.10$ and p < 0.05 form the core categorical feature set used in the model.
+
+```{r cat-interior-img, echo=FALSE, fig.cap="High Cramér's V Between Categorical Predictors (Multicollinearity Check)", fig.align='center', out.width='85%'}
+knitr::include_graphics("glm_gam_plots/cat_interior.png")
+```
+
+Cramér's V Between Predictors – **Multicollinearity Check** (`cat_interior.png`).  
+This plot highlights pairs of categorical variables that overlap so heavily they threaten model stability. Nearly perfect redundancy ($V \geq 0.95$) exists between **Married – Partner**, **Partner – Referred.a.Friend**, and **Internet.Service – Internet.Type**. High overlap also appears for **Streaming.Movies – Streaming.Music** ($V \approx 0.85$) and for **Unlimited.Data** in combination with Internet-related fields ($V \approx 0.74$). To avoid duplicate information and inflated variance, one variable from each high-overlap pair was dropped or merged. The resulting streamlined list—*Device.Protection.Plan, Online.Backup, Online.Security, Paperless.Billing, Partner, Premium.Tech.Support, Senior.Citizen, Streaming.Movies, Dependents, Internet.Type, Payment.Method, Satisfaction.Score,* and *Under.30*—forms the final categorical feature set used in modelling.
+
+```{r drop1-cat-glm-img, echo=FALSE, fig.cap="Variable Importance via Likelihood Ratio Test (drop1)", fig.align='center', out.width='85%'}
+knitr::include_graphics("glm_gam_plots/drop1_cat_glm.png")
+```
+
+An initial logistic regression was fit using the most relevant categorical predictors based on prior Cramér's V analysis. To evaluate each predictor's contribution, a likelihood ratio test (`drop1()`) was applied. The figure displays LRT statistics, quantifying model deterioration when each variable is removed. Satisfaction Score was by far the most influential ($LRT \approx 1956$), followed by Online Security, Internet Type, Dependents, and Premium Tech Support ($LRT > 20$, p < 0.01). Variables with low LRT values were considered non-essential and removed from the final categorical model.
+
+A follow-up **ANOVA** compared the full and reduced categorical models.  
+The cleaned model excluded six predictors with weak contribution, including `Partner`, `Streaming.Movies`, and `Payment.Method`.
+
+**Result:** No significant loss in model fit  
+• $\Delta$ Deviance = 3.83  
+• Degrees of Freedom = 6  
+• p-value = 0.7002  
+
+This confirms the reduced model retains predictive power while improving simplicity.
+
+```{r eta-square-img, echo=FALSE, fig.cap="Effect Size (eta² > 5%) by Categorical–Continuous Pair", fig.align='center', out.width='85%'}
+knitr::include_graphics("glm_gam_plots/etasquare.png")
+```
+
+Eta-squared was applied to measure shared variance between each categorical predictor and key continuous churn metrics. Pairs exceeding 5% $\eta^2$ (highlighted in the plot) were shortlisted for the hybrid model; lower-value pairs were disregarded. **Internet Type** dominated several high-$\eta^2$ relationships and was therefore excluded to avoid redundancy in the merged specification.
+
+#### Combined GLM and Variable-Importance Check
+
+The strongest categorical predictors identified earlier were merged with the key continuous churn drivers to form a single logistic model. A `drop1()` likelihood-ratio test was then applied to that combined GLM, allowing each term's marginal contribution to be quantified. The bar chart below visualises those LRT statistics.
+
+```{r drop1-merged-glm-img, echo=FALSE, fig.cap="Variable Importance via Likelihood Ratio Test (drop1) – Combined GLM", fig.align='center', out.width='85%'}
+knitr::include_graphics("glm_gam_plots/drop1_merge.png")
+```
+
+The plot ranks predictors from the combined GLM by their likelihood-ratio test statistic (LRT), quantifying the change in deviance when each term is removed.
+
+* **Satisfaction.Score** leads with an LRT $\approx$ **1,895**, underscoring its central role in churn prediction.  
+* **Online.Security** follows at **$\approx 81$**, indicating a strong, independent contribution.  
+* **Internet.Type** (**$\approx 25$**) and **Dependents** (**$\approx 22$**) provide solid additional explanatory power.  
+* **Premium.Tech.Support** (**$\approx 17$**) and **Device.Protection.Plan** (**$\approx 4$**) also improve model fit, though to a lesser extent.
+
+These statistics guide feature prioritisation for the final modelling specification.
+
+### GLM Coefficients Summary – Final Model
+
+```{r glm-coefficients-table, echo=FALSE}
+glm_coef_table <- data.frame(
+  Variable = c("(Intercept)", "Number.of.Referrals", "Tenure.in.Months", "Age", 
+               "Online.Backup1", "Online.Security1", "Paperless.Billing1", 
+               "Premium.Tech.Support1", "Dependents1", "Satisfaction.Score2", 
+               "Satisfaction.Score3", "Satisfaction.Score4", "Satisfaction.Score5", 
+               "Monthly.Charge"),
+  Estimate = c(22.800, -3.453, -0.0306, 0.00388, -0.180, -2.802, 0.605, 
+               -1.102, -1.558, -1.149, -24.460, -4.432, -4.481, 0.0250),
+  Std_Error = c(1128.000, 0.792, 0.00558, 0.00612, 0.258, 0.440, 0.235, 
+                0.296, 0.430, 2107.000, 1128.000, 1531.000, 1710.000, 0.0422),
+  z_value = c(0.019, -4.359, -5.476, 0.635, -0.698, -6.364, 2.577, 
+              -3.720, -3.627, -0.001, -0.020, -0.029, -0.026, 5.929),
+  p_value = c("0.9852", "1.31e-05", "4.34e-08", "0.5254", "0.4852", 
+              "1.96e-10", "0.00996", "0.000190", "0.000287", "0.9996", 
+              "0.9841", "0.9769", "0.9791", "3.05e-09"),
+  Significance = c("", "***", "***", "", "", "***", "**", "***", "***", 
+                   "", "", "", "", "***")
+)
+
+knitr::kable(glm_coef_table,
+             caption = "GLM Coefficients Summary – Final Model",
+             col.names = c("Variable", "Estimate", "Std. Error", "z value", "Pr(>|z|)", "Significance"),
+             align = "lrrrrr",
+             digits = c(0, 3, 3, 3, 0, 0))
+```
+
+- **Null Deviance**: 3423.1 on 2957 degrees of freedom  
+- **Residual Deviance**: 603.6 on 2944 degrees of freedom  
+- **AIC**: 631.6  
+- **Fisher Scoring Iterations**: 20
+
+Significance codes: *** p < 0.001, ** p < 0.01, * p < 0.05
+
+### Key GLM Effects (Exponentiated for Odds-Ratio Interpretation)
+
+```{r odds-ratio-table, echo=FALSE}
+odds_table <- data.frame(
+  Predictor = c("Number of Referrals", "Tenure (months)", "Online Security = Yes",
+                "Premium Tech Support = Yes", "Dependents = Yes", 
+                "Paperless Billing = Yes", "Monthly Charge (per $1)"),
+  Beta = c(-3.453, -0.031, -2.802, -1.102, -1.558, 0.605, 0.025),
+  Odds_Ratio = c(0.03, 0.97, 0.06, 0.33, 0.21, 1.85, 1.03),
+  Meaning = c("97% lower odds per referral", "3% lower odds per month", 
+              "94% lower odds", "67% lower odds", "79% lower odds", 
+              "85% higher odds", "2.5% higher odds per $")
+)
+
+knitr::kable(odds_table,
+             caption = "Key GLM Effects (Odds-Ratio Interpretation)",
+             col.names = c("Predictor", "β", "Odds Ratio (e^β)", "Meaning"),
+             align = "lrcl")
+```
+
+### Key Insights from the Final GLM  
+
+Every extra **referral** makes churn about 97% less likely, an interesting measure but not very actionable. Having **Online Security** or **Premium Tech Support** on the account cuts churn noticeably, showing these add-ons help keep customers. People with **dependents** leave less often, while a **higher monthly charge** nudges churn upward. Customers on **paperless billing** show higher churn and may need more attention.  
+
+With these variables, the streamlined logistic model fits well (**AIC $\approx$ 632; residual deviance $\approx$ 604 on 2,944 df**) and give interesting business insights.
+
+### Confusion Matrix  
+
+```{r glm-confusion-matrix, echo=FALSE}
+confusion_glm <- data.frame(
+  row.names = c("Actual 0", "Actual 1"),
+  "Predicted 0" = c("904 (TN)", "31 (FN)"),
+  "Predicted 1" = c("27 (FP)", "305 (TP)")
+)
+
+knitr::kable(confusion_glm,
+             caption = "GLM Confusion Matrix",
+             col.names = c("Predicted 0", "Predicted 1"),
+             align = "cc")
+```
+
+### Key Metrics  
+
+```{r glm-metrics-table, echo=FALSE}
+glm_metrics <- data.frame(
+  Metric = c("Accuracy", "Precision (Positive class)", "Recall / Sensitivity", 
+             "Specificity", "F1 Score"),
+  Calculation = c("(904 + 305) / 1267", "305 / (305 + 27)", "305 / (305 + 31)", 
+                  "904 / (904 + 27)", "Harmonic mean"),
+  Result = c("95.4%", "91.8%", "90.8%", "97.1%", "0.91")
+)
+
+knitr::kable(glm_metrics,
+             caption = "GLM Performance Metrics",
+             col.names = c("Metric", "Calculation", "Result"),
+             align = "llc")
+```
+
+### Interpretation  
+The model correctly classifies the majority of cases, achieving an overall accuracy of ~95%. Precision (92%) and recall (91%) are well balanced, indicating that when the model predicts churn, it is usually correct, and it detects most actual churners. The low false-positive (27) and false-negative (31) counts highlight reliable performance on both classes. Specificity above 97% confirms strong discrimination for non-churn customers. Overall, the confusion-matrix results support the model's practical deployment.
+
+### GAM Model
+
+```{r loess-gam-img, echo=FALSE, fig.cap="Exploratory LOESS Curves for GAM Specification", fig.align='center', out.width='95%'}
+knitr::include_graphics("glm_gam_plots/Curve analysis.png")
+```
+
+* **Monthly Charge** shows a pronounced non-linear "hump," so it will enter the GAM with a smooth term `+ s(Monthly.Charge)`.  
+* **Tenure (in Months)** drops steeply in the first year and then flattens; a smooth term `+ s(Tenure.in.Months)` is appropriate.  
+* **Number of Referrals** declines sharply from 0 to $\approx$ 2 and then levels off; a spline term `+ s(Number.of.Referrals)` (or a simple knot at 2) will capture this shape.  
+* **Age** rises almost linearly, suggesting a plain linear term; no `s()` is planned for age unless later checks reveal curvature.  
+
+These observations guide the initial GAM formula and choice of smoothers.
+
+### GAM Model Comparison: REML vs GCV.Cp
+
+Two generalized additive models were fitted using different smoothing selection criteria—**REML** and **GCV.Cp**—to assess stability and model performance. Both models achieved high explanatory power, with the REML model accounting for **83.65%** of the deviance and the GCV.Cp model slightly outperforming it at **83.68%**.
+
+In terms of information criteria, the **AIC for the REML model was 601.55**, while the **GCV.Cp model achieved a lower AIC of 598.09**, suggesting better model efficiency and fit relative to complexity. Although the difference in deviance explained is minimal (**0.03%**), the drop in AIC by **3.46 points** provides sufficient justification to prefer the GCV.Cp model.
+
+### Significant Parametric Effects (Categorical Predictors)
+
+```{r gam-parametric-table, echo=FALSE}
+gam_param <- data.frame(
+  Predictor = c("Online Security = Yes", "Premium Tech Support = Yes", 
+                "Dependents = Yes", "Paperless Billing = Yes"),
+  Beta = c(-2.720, -1.053, -1.921, 0.617),
+  Odds_Ratio = c(0.07, 0.35, 0.15, 1.85),
+  Meaning = c("93% lower odds", "65% lower odds", "85% lower odds", "85% higher odds")
+)
+
+knitr::kable(gam_param,
+             caption = "GAM Significant Parametric Effects",
+             col.names = c("Predictor", "β", "Odds Ratio (e^β)", "Meaning"),
+             align = "lrcl")
+```
+
+*Odds ratio (OR) converts log-odds effects to multiplicative changes in churn odds.*
+
+### Approximate Significance of Smooth Terms
+
+```{r gam-smooth-table, echo=FALSE}
+gam_smooth <- data.frame(
+  Smooth_Term = c("s(Monthly Charge)", "s(Tenure in Months)", 
+                  "s(Number of Referrals)", "s(Age)"),
+  EDF = c(1.00, 3.67, 3.96, 1.10),
+  Chi_squared = c(35.37, 47.20, 27.50, 0.57),
+  p_value = c("< 2 × 10⁻¹⁶", "< 2 × 10⁻¹⁶", "3.7 × 10⁻⁵", "0.59"),
+  Result = c("Significant", "Significant", "Significant", "Not significant")
+)
+
+knitr::kable(gam_smooth,
+             caption = "GAM Smooth Terms Significance",
+             col.names = c("Smooth Term", "EDF", "χ²", "p-value", "Result"),
+             align = "lrrcl")
+```
+
+These tables highlight the categorical factors with strong effects on churn and confirm which continuous predictors require non-linear treatment in the GAM.
+
+### Confusion Matrix Overview
+
+The final model shows strong classification performance on the validation set. Out of **1,267** total predictions, **904** true negatives and **305** true positives were correctly identified. The model misclassified **27** non-churners as churners (false positives) and **31** churners as non-churners (false negatives).
+
+### Key Metrics
+
+```{r gam-metrics-table, echo=FALSE}
+gam_metrics <- data.frame(
+  Metric = c("Accuracy", "Precision (Positive class)", "Recall / Sensitivity", 
+             "Specificity", "F1 Score"),
+  Result = c("95.4%", "91.8%", "90.8%", "97.1%", "0.91"),
+  Calculation = c("(904 + 305) / 1267", "305 / (305 + 27)", "305 / (305 + 31)", 
+                  "904 / (904 + 27)", "Harmonic mean of precision and recall")
+)
+
+knitr::kable(gam_metrics,
+             caption = "GAM Performance Metrics",
+             col.names = c("Metric", "Result", "Calculation"),
+             align = "lcl")
+```
+
+### GLM vs GAM — Performance Snapshot  
+
+```{r comparison-table, echo=FALSE}
+comparison <- data.frame(
+  Metric = c("Accuracy", "Precision (Positive)", "Recall / Sensitivity", 
+             "Specificity", "F1 Score", "Deviance Explained"),
+  GLM = c("95.4%", "91.8%", "90.8%", "97.1%", "0.91", "83.65%"),
+  GAM = c("95.4%", "91.8%", "90.8%", "97.1%", "0.91", "83.68%")
+)
+
+knitr::kable(comparison,
+             caption = "GLM vs GAM Performance Comparison",
+             col.names = c("Metric", "GLM", "GAM"),
+             align = "lcc")
+```
+
+Both models classify churn equally well, producing identical confusion-matrix metrics.  
+The GAM explains a fractionally larger share of deviance (0.03 percentage points) by using smooth terms for **Monthly Charge**, **Tenure**, and **Number of Referrals**. However, its AIC was obtained with a GCV criterion and **is not on the same scale as the GLM's likelihood-based AIC**, so it cannot be used for fair comparison.
+
+**Conclusion:** because predictive performance is the same and the GAM's marginal gain in deviance explained comes at the cost of extra complexity, the simpler and fully interpretable **GLM** is preferred unless future diagnostics show clear non-linear benefits that justify the GAM's added complexity.
 
 # Results
 
@@ -436,3 +723,17 @@ While the Poisson GLM provides valuable insights into referral behavior patterns
 The model's temporal stability should be monitored regularly, as customer behavior patterns and market conditions evolve continuously. Quarterly model validation and annual recalibration procedures will help ensure that coefficient estimates remain accurate and relevant for strategic decision-making. Additionally, the satisfaction score relationships warrant deeper investigation to understand the underlying mechanisms driving the observed patterns.
 
 The organization should also consider establishing clear protocols for translating model insights into operational referral program decisions. This includes developing guidelines for customer targeting based on model predictions, setting appropriate incentive levels for different customer segments, and measuring the business impact of model-driven initiatives to validate the approach's effectiveness.
+
+# Conclusion
+
+This study addressed Alphawave Telecom's critical challenge of reducing their 24% customer churn rate by investigating two key questions: which factors drive customer churn most significantly, and which predictive models deliver the highest accuracy for retention strategies. We employed five distinct modeling approaches—Linear Models for CLTV prediction, Support Vector Machines, Neural Networks, Poisson GLM for referral behavior, and Generalized Additive Models—to provide both interpretable insights and robust predictive capabilities.
+
+Our analysis consistently identified satisfaction scores as the dominant churn predictor across all modeling approaches, with correlation coefficients exceeding 0.86 and demonstrating 94-97% reduction in churn likelihood for highly satisfied customers. Tenure in months emerged as the second most critical factor, with polynomial analysis revealing a vulnerable plateau phase between 10-30 months where proactive intervention could prevent customer defection.
+
+Predictive modeling revealed remarkably consistent performance across methodologies. The optimized SVM classifier and neural network architecture achieved approximately 98.6% accuracy, while the logistic GLM and GAM models demonstrated 95.4% accuracy with superior interpretability. Premium services (Online Security, Premium Tech Support) showed 67-94% lower churn odds, indicating these add-ons serve as effective retention tools, while paperless billing customers exhibited 85% higher churn risk.
+
+The logistic GLM emerged as the optimal operational model, balancing accuracy (95.4%), interpretability, and computational efficiency. The two-layer neural network (6,4 neurons) provided complementary value for complex pattern recognition, while the Poisson GLM offered actionable insights for referral program optimization.
+
+Several areas warrant further investigation to enhance the analytical framework. The influential outliers identified through Cook's distance analysis suggest potential customer microsegments that could benefit from specialized modeling approaches. Integration of temporal dynamics through survival analysis or time-series modeling could improve understanding of churn timing and enable more precise intervention scheduling.
+
+Experimental validation of model recommendations through controlled retention campaigns would provide valuable feedback for model refinement. Additionally, deeper exploration of payment method relationships with churn patterns, particularly under GDPR constraints, could reveal additional retention opportunities. Finally, incorporating real-time behavioral data streams could enhance model responsiveness and prediction accuracy for dynamic customer intervention strategies.
