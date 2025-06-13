@@ -1,7 +1,9 @@
 ---
-title: "ML1 Telco Customer Analysis - Neural Network & Poisson GLM Documentation"
+title: "Alphawave Telecom Customer Churn Analysis: A Multi-Method Approach to Predictive Analytics and Retention Strategy"
 author: "Merun Gugelmann, Khan Gulraiz and Roger Bavibidila"
 date: "2025-06-13"
+bibliography: references.bib
+csl: apa.csl  
 output:
   pdf_document:
     latex_engine: xelatex
@@ -28,24 +30,42 @@ library(tidyr)
 library(plotly)
 set.seed(123)
 ```
+```{r, echo=FALSE}
+# Download APA CSL file if it doesn't exist
+if (!file.exists("apa.csl")) {
+  download.file(
+    url = "https://www.zotero.org/styles/apa",
+    destfile = "apa.csl"
+  )
+}
+```
 
 # Introduction
 
-Alphawave Telecom’s new smart-home security bundle will succeed only if the firm can first stem its 24 % customer-churn rate. This report studies that challenge by asking two linked questions: *Which modelling approach explains churn drivers most clearly, and which delivers the most accurate churn predictions?*
+Customer churn represents one of the most critical challenges facing telecommunications companies worldwide, with average industry churn rates ranging from 15-25% annually [@customergauge_average_2022]. For Alphawave Telecom, this challenge has become particularly acute as their 24% customer churn rate threatens the viability of their upcoming smart-home security bundle launch. The financial implications are substantial: acquiring new customers costs five to seven times more than retaining existing ones [@gallo_value_2014], while a 5% reduction in churn can increase profitability by 25-95% according to industry research [@reichheld_zero_1990].
+
+This comprehensive analysis addresses the urgent need for data-driven churn prevention strategies by investigating two fundamental questions that will shape Alphawave's retention approach: *Which modelling approach explains churn drivers most clearly, and which delivers the most accurate churn predictions?*
 
 ## Research objectives  
+This study pursues three interconnected objectives that collectively address Alphawave's strategic and operational needs:
+
 1. Identify and rank the variables that influence churn.  
 2. Predict churn far enough in advance to trigger targeted retention offers.  
 3. Compare model families on two criteria: interpretability for business insight and out-of-sample predictive performance.
 
 ## Modelling toolkit  
+Our comprehensive analytical approach employs five complementary modeling techniques, each selected to address specific aspects of customer behavior analysis and business decision support:
+
 - *Linear Model (LM)* – estimates Customer Lifetime Value (CLTV) for revenue segmentation.  
 - *Support Vector Machine (SVM)* – provides a benchmark churn classifier using engineered features.  
 - *Neural Network (NN)* – tests whether deeper non-linear patterns improve churn prediction.  
 - *Poisson GLM* – models the count of customer referrals as a growth lever.  
 - *Logistic GAM/GLM* – combines categorical and continuous drivers into an interpretable churn-risk score.
 
-By evaluating each model on explanatory clarity and predictive accuracy, we will recommend the technique—or combination of techniques—that best balances business insight with operational decision support. The remainder of the report covers data and methods (Section 2), results (Section 3), and practical implications for Alphawave’s retention strategy (Section 4).
+By systematically evaluating each approach on both explanatory clarity and predictive performance, we aim to identify the optimal technique—or strategic combination of techniques—that best supports Alphawave's dual needs for business insight and operational effectiveness. This multi-method approach ensures robust validation of findings while providing flexibility to address different aspects of customer relationship management.
+
+## Project Structure and Scope
+This analysis follows a systematic progression from problem context through methodological implementation to strategic recommendations. Section 2 provides essential background on Alphawave's business context and details our data preparation and analytical methods. Section 3 presents comprehensive results for each modeling approach, with particular emphasis on performance comparisons and business interpretations. The conclusion synthesizes findings across all methods to deliver actionable recommendations for Alphawave's retention strategy and future analytical initiatives.
 
 # Background
 
@@ -81,6 +101,30 @@ since the whole work was divided into 3 parts in order to make that all of us co
    - Applied LASSO regression for feature selection.
    - Trained a Support Vector Machine (SVM) classifier using selected features.
    - Hyperparameter tuning performed via cross-validation.
+   
+## Use of Generative AI (ChatGPT) in This Project 
+
+Throughout the project, ChatGPT was used to complement the development and reporting process.  
+It proved especially helpful for speeding up repetitive coding tasks and spotting errors in code.  
+Its main contributions were:
+
+&nbsp;
+
+- *Debugging Assistance:* Helped locate the source of coding errors by suggesting possible points of failure or overlooked code segments.  
+
+- *Code Generation for Repetitive Tasks:* Drafted template ggplot code for multiple, similarly structured graphs, streamlining repetitive work.  
+
+- *Markdown Formatting:* Created Markdown tables and special-formatting blocks by converting images of tables into clean Markdown.  
+
+- *Language and Grammar Support:* Suggested improvements to sentence structure, grammar, and wording, making the report clearer.  
+
+&nbsp;
+
+*Limitations and Cautions:*
+
+While very helpful, ChatGPT is not a plug-and-play solution.  
+Some auto-generated fixes added unnecessary complexity or treated symptoms rather than root causes (for example, masking errors that actually stemmed from earlier data-handling steps).  
+Every AI suggestion was therefore reviewed and, where needed, rewritten or discarded to keep the workflow clean and correct.
    
 ## SVM and LM
 ### Linear Model for CLTV
@@ -140,13 +184,13 @@ On the right (high regularization), the model becomes too simple (uses very few 
 In essence, this plot visually confirms that your cross-validation successfully found the ideal amount of regularization to build a churn prediction model that is both accurate and appropriately parsimonious, by identifying the lambda value that minimizes prediction error on unseen data.
 
 Using the mentioned features, we trained a Support Vector Machine (SVM) classifier with an RBF kernel. The model’s hyperparameters, including the cost parameter and kernel coefficient (gamma), were tuned using a grid search with 5-fold cross-validation. The final model showed strong classification performance (accuracy and other metrics can be added here once evaluated) and was able to distinguish between customers likely to churn and those likely to stay.
+
 ### Hyperparameter Tuning and Model Selection
 
 The hyperparameter tuning process involved evaluating multiple values of the cost parameter `C`, which controls the trade-off between maximizing the margin and minimizing classification error, and the kernel coefficient `gamma`, which defines the influence of a single training example. The 5-fold cross-validation ensured that the model's performance was validated on different subsets of the data, providing a reliable estimate of its generalization capability.
 
 The best performing model was identified based on accuracy, with optimal values found at `C = 1` and `gamma = 0.0225`. This balance allowed the model to fit the data well without overfitting, as reflected by the high accuracy observed during cross-validation.
 
----
 
 ### Final Model Training and Evaluation
 
@@ -158,7 +202,6 @@ The evaluation metrics demonstrated:
 - **Strong sensitivity and specificity**, reflecting the model's ability to correctly identify both churners and non-churners.
 - **Balanced confusion matrix results**, with low false positive and false negative rates, essential for business decisions such as targeted retention campaigns.
 
----
 
 ### SVM Results
 
@@ -168,7 +211,6 @@ The cross-validation approach during tuning helped avoid overfitting, ensuring t
 
 Comparing the models trained using caret’s automated tuning and the manual `svm()` approach revealed that automated hyperparameter optimization is advantageous for systematic exploration and robust performance estimation. The manual model, while slightly more accurate on the test set, may risk overfitting without cross-validation.
 
----
 
 ### Practical Implications
 
@@ -737,3 +779,5 @@ The logistic GLM emerged as the optimal operational model, balancing accuracy (9
 Several areas warrant further investigation to enhance the analytical framework. The influential outliers identified through Cook's distance analysis suggest potential customer microsegments that could benefit from specialized modeling approaches. Integration of temporal dynamics through survival analysis or time-series modeling could improve understanding of churn timing and enable more precise intervention scheduling.
 
 Experimental validation of model recommendations through controlled retention campaigns would provide valuable feedback for model refinement. Additionally, deeper exploration of payment method relationships with churn patterns, particularly under GDPR constraints, could reveal additional retention opportunities. Finally, incorporating real-time behavioral data streams could enhance model responsiveness and prediction accuracy for dynamic customer intervention strategies.
+
+# References

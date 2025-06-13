@@ -64,6 +64,29 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -71,13 +94,13 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={ML1 Telco Customer Analysis - Neural Network \& Poisson GLM Documentation},
+  pdftitle={Alphawave Telecom Customer Churn Analysis: A Multi-Method Approach to Predictive Analytics and Retention Strategy},
   pdfauthor={Merun Gugelmann, Khan Gulraiz and Roger Bavibidila},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 
-\title{ML1 Telco Customer Analysis - Neural Network \& Poisson GLM
-Documentation}
+\title{Alphawave Telecom Customer Churn Analysis: A Multi-Method
+Approach to Predictive Analytics and Retention Strategy}
 \author{Merun Gugelmann, Khan Gulraiz and Roger Bavibidila}
 \date{2025-06-13}
 
@@ -91,14 +114,28 @@ Documentation}
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
 
-Alphawave Telecom's new smart-home security bundle will succeed only if
-the firm can first stem its 24 \% customer-churn rate. This report
-studies that challenge by asking two linked questions: \emph{Which
-modelling approach explains churn drivers most clearly, and which
-delivers the most accurate churn predictions?}
+Customer churn represents one of the most critical challenges facing
+telecommunications companies worldwide, with average industry churn
+rates ranging from 15-25\% annually (CustomerGauge, 2022). For Alphawave
+Telecom, this challenge has become particularly acute as their 24\%
+customer churn rate threatens the viability of their upcoming smart-home
+security bundle launch. The financial implications are substantial:
+acquiring new customers costs five to seven times more than retaining
+existing ones (Gallo, 2014), while a 5\% reduction in churn can increase
+profitability by 25-95\% according to industry research (Reichheld \&
+Sasser, 1990).
+
+This comprehensive analysis addresses the urgent need for data-driven
+churn prevention strategies by investigating two fundamental questions
+that will shape Alphawave's retention approach: \emph{Which modelling
+approach explains churn drivers most clearly, and which delivers the
+most accurate churn predictions?}
 
 \hypertarget{research-objectives}{%
 \subsection{Research objectives}\label{research-objectives}}
+
+This study pursues three interconnected objectives that collectively
+address Alphawave's strategic and operational needs:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -115,6 +152,10 @@ delivers the most accurate churn predictions?}
 
 \hypertarget{modelling-toolkit}{%
 \subsection{Modelling toolkit}\label{modelling-toolkit}}
+
+Our comprehensive analytical approach employs five complementary
+modeling techniques, each selected to address specific aspects of
+customer behavior analysis and business decision support:
 
 \begin{itemize}
 \tightlist
@@ -135,12 +176,27 @@ delivers the most accurate churn predictions?}
   into an interpretable churn-risk score.
 \end{itemize}
 
-By evaluating each model on explanatory clarity and predictive accuracy,
-we will recommend the technique---or combination of techniques---that
-best balances business insight with operational decision support. The
-remainder of the report covers data and methods (Section 2), results
-(Section 3), and practical implications for Alphawave's retention
-strategy (Section 4).
+By systematically evaluating each approach on both explanatory clarity
+and predictive performance, we aim to identify the optimal
+technique---or strategic combination of techniques---that best supports
+Alphawave's dual needs for business insight and operational
+effectiveness. This multi-method approach ensures robust validation of
+findings while providing flexibility to address different aspects of
+customer relationship management.
+
+\hypertarget{project-structure-and-scope}{%
+\subsection{Project Structure and
+Scope}\label{project-structure-and-scope}}
+
+This analysis follows a systematic progression from problem context
+through methodological implementation to strategic recommendations.
+Section 2 provides essential background on Alphawave's business context
+and details our data preparation and analytical methods. Section 3
+presents comprehensive results for each modeling approach, with
+particular emphasis on performance comparisons and business
+interpretations. The conclusion synthesizes findings across all methods
+to deliver actionable recommendations for Alphawave's retention strategy
+and future analytical initiatives.
 
 \hypertarget{background}{%
 \section{Background}\label{background}}
@@ -240,6 +296,46 @@ Cook's distance and Q-Q plots to ensure model validity.
     Hyperparameter tuning performed via cross-validation.
   \end{itemize}
 \end{enumerate}
+
+\hypertarget{use-of-generative-ai-chatgpt-in-this-project}{%
+\subsection{Use of Generative AI (ChatGPT) in This
+Project}\label{use-of-generative-ai-chatgpt-in-this-project}}
+
+Throughout the project, ChatGPT was used to complement the development
+and reporting process.\\
+It proved especially helpful for speeding up repetitive coding tasks and
+spotting errors in code.\\
+Its main contributions were:
+
+~
+
+\begin{itemize}
+\item
+  \emph{Debugging Assistance:} Helped locate the source of coding errors
+  by suggesting possible points of failure or overlooked code segments.
+\item
+  \emph{Code Generation for Repetitive Tasks:} Drafted template ggplot
+  code for multiple, similarly structured graphs, streamlining
+  repetitive work.
+\item
+  \emph{Markdown Formatting:} Created Markdown tables and
+  special-formatting blocks by converting images of tables into clean
+  Markdown.
+\item
+  \emph{Language and Grammar Support:} Suggested improvements to
+  sentence structure, grammar, and wording, making the report clearer.
+\end{itemize}
+
+~
+
+\emph{Limitations and Cautions:}
+
+While very helpful, ChatGPT is not a plug-and-play solution.\\
+Some auto-generated fixes added unnecessary complexity or treated
+symptoms rather than root causes (for example, masking errors that
+actually stemmed from earlier data-handling steps).\\
+Every AI suggestion was therefore reviewed and, where needed, rewritten
+or discarded to keep the workflow clean and correct.
 
 \hypertarget{svm-and-lm}{%
 \subsection{SVM and LM}\label{svm-and-lm}}
@@ -447,8 +543,11 @@ the cost parameter and kernel coefficient (gamma), were tuned using a
 grid search with 5-fold cross-validation. The final model showed strong
 classification performance (accuracy and other metrics can be added here
 once evaluated) and was able to distinguish between customers likely to
-churn and those likely to stay. \#\#\# Hyperparameter Tuning and Model
-Selection
+churn and those likely to stay.
+
+\hypertarget{hyperparameter-tuning-and-model-selection}{%
+\subsubsection{Hyperparameter Tuning and Model
+Selection}\label{hyperparameter-tuning-and-model-selection}}
 
 The hyperparameter tuning process involved evaluating multiple values of
 the cost parameter \texttt{C}, which controls the trade-off between
@@ -462,8 +561,6 @@ The best performing model was identified based on accuracy, with optimal
 values found at \texttt{C\ =\ 1} and \texttt{gamma\ =\ 0.0225}. This
 balance allowed the model to fit the data well without overfitting, as
 reflected by the high accuracy observed during cross-validation.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{final-model-training-and-evaluation}{%
 \subsubsection{Final Model Training and
@@ -490,8 +587,6 @@ The evaluation metrics demonstrated:
   targeted retention campaigns.
 \end{itemize}
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
 \hypertarget{svm-results}{%
 \subsubsection{SVM Results}\label{svm-results}}
 
@@ -509,8 +604,6 @@ manual \texttt{svm()} approach revealed that automated hyperparameter
 optimization is advantageous for systematic exploration and robust
 performance estimation. The manual model, while slightly more accurate
 on the test set, may risk overfitting without cross-validation.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{practical-implications}{%
 \subsubsection{Practical Implications}\label{practical-implications}}
@@ -1978,5 +2071,28 @@ relationships with churn patterns, particularly under GDPR constraints,
 could reveal additional retention opportunities. Finally, incorporating
 real-time behavioral data streams could enhance model responsiveness and
 prediction accuracy for dynamic customer intervention strategies.
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-customergauge_average_2022}{}}%
+CustomerGauge. (2022). What's the {Average} {Churn} {Rate} by
+{Industry}? In \emph{CustomerGauge}.
+\url{https://customergauge.com/blog/average-churn-rate-by-industry}
+
+\leavevmode\vadjust pre{\hypertarget{ref-gallo_value_2014}{}}%
+Gallo, A. (2014). The {Value} of {Keeping} the {Right} {Customers}.
+\emph{Harvard Business Review}.
+\url{https://hbr.org/2014/10/the-value-of-keeping-the-right-customers}
+
+\leavevmode\vadjust pre{\hypertarget{ref-reichheld_zero_1990}{}}%
+Reichheld, F. F., \& Sasser, W. E. (1990). Zero defections: {Quality}
+comes to services. \emph{Harvard Business Review}, \emph{68}(5),
+105--111.
+
+\end{CSLReferences}
 
 \end{document}
